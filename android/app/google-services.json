@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "363843415136",
+    "project_id": "bungeeksa",
+    "storage_bucket": "bungeeksa.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:363843415136:android:44e71dfb508bbf3249e705",
+        "android_client_info": {
+          "package_name": "com.bungee.bungeeksa"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyC82aIVyX5mfyXCKRtfScENmGBao6wEe5k"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
