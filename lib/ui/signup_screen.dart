@@ -1,17 +1,16 @@
-import 'package:bungee_ksa/ui/widgets/forget_password.dart';
 import 'package:flutter/material.dart';
-import 'onboarding/onboarding_screen.dart';
 import '../utils/colors.dart';
-import 'signup_screen.dart';
 import 'widgets/custom_button.dart';
 import 'widgets/custom_text_field.dart';
-import 'widgets/social_button.dart';
 
-class LoginScreen extends StatelessWidget {
+class SignUpScreen extends StatelessWidget {
+  final TextEditingController _nameController = TextEditingController();
   final TextEditingController _emailController = TextEditingController();
+  final TextEditingController _phoneController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
+  final TextEditingController _confirmPasswordController = TextEditingController();
 
-  LoginScreen({super.key});
+  SignUpScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -26,13 +25,13 @@ class LoginScreen extends StatelessWidget {
               const SizedBox(height: 80),
               Center(
                 child: Image.asset(
-                  'assets/images/logo.png', // Add your logo image path here
+                  'assets/images/logo.png', // Your logo path
                   height: 200,
                 ),
               ),
               const SizedBox(height: 40),
               const Text(
-                "Welcome back!",
+                "Let's Get Started!",
                 style: TextStyle(
                   fontSize: 28,
                   fontWeight: FontWeight.bold,
@@ -41,7 +40,7 @@ class LoginScreen extends StatelessWidget {
               ),
               const SizedBox(height: 4),
               const Text(
-                "Log in to your account",
+                "Create an account to access all features",
                 style: TextStyle(
                   fontSize: 16,
                   color: AppColors.neutral,
@@ -49,9 +48,21 @@ class LoginScreen extends StatelessWidget {
               ),
               const SizedBox(height: 24),
               CustomTextField(
+                controller: _nameController,
+                labelText: "Full Name",
+                icon: Icons.person,
+              ),
+              const SizedBox(height: 16),
+              CustomTextField(
                 controller: _emailController,
                 labelText: "Email",
                 icon: Icons.email,
+              ),
+              const SizedBox(height: 16),
+              CustomTextField(
+                controller: _phoneController,
+                labelText: "Phone",
+                icon: Icons.phone,
               ),
               const SizedBox(height: 16),
               CustomTextField(
@@ -60,76 +71,37 @@ class LoginScreen extends StatelessWidget {
                 icon: Icons.lock,
                 isPassword: true,
               ),
-              const SizedBox(height: 8),
-              Align(
-                alignment: Alignment.centerRight,
-                child: TextButton(
-                  onPressed: () {
-                    // Forgot password logic here
-                    showDialog(context: context, builder: (context) => ForgotPasswordDialog(),);
-                  },
-                  child: const Text(
-                    "Forgot Password?",
-                    style: TextStyle(color: AppColors.primary),
-                  ),
-                ),
+              const SizedBox(height: 16),
+              CustomTextField(
+                controller: _confirmPasswordController,
+                labelText: "Confirm Password",
+                icon: Icons.lock,
+                isPassword: true,
               ),
               const SizedBox(height: 24),
               Center(
                 child: CustomButton(
-                  text: "LOG IN",
+                  text: "CREATE",
                   onPressed: () {
-                    // Navigate to OnboardingScreen after login
-                    Navigator.pushReplacement(
-                      context,
-                      MaterialPageRoute(builder: (context) => OnboardingScreen()),
-                    );
+                    // Sign-Up logic here
                   },
                   backgroundColor: AppColors.primary,
                 ),
               ),
               const SizedBox(height: 24),
-              const Center(child: Text("Or connect using")),
-              const SizedBox(height: 16),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  SocialButton(
-                    icon: Icons.facebook,
-                    text: "Facebook",
-                    backgroundColor: AppColors.facebookBlue,
-                    onPressed: () {
-                      // Facebook login logic
-                    },
-                  ),
-                  const SizedBox(width: 16),
-                  SocialButton(
-                    icon: Icons.g_translate,
-                    text: "Google",
-                    backgroundColor: AppColors.googleRed,
-                    onPressed: () {
-                      // Google login logic
-                    },
-                  ),
-                ],
-              ),
-              const SizedBox(height: 40),
               Center(
                 child: GestureDetector(
                   onTap: () {
-                    // Navigate to Sign-Up screen
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(builder: (context) => SignUpScreen()),
-                    );
+                    // Navigate to Sign-In screen
+                    Navigator.pop(context); // To go back to Sign-In
                   },
                   child: RichText(
                     text: const TextSpan(
-                      text: "Don't have an account? ",
+                      text: "Already have an account? ",
                       style: TextStyle(color: AppColors.neutral),
                       children: [
                         TextSpan(
-                          text: "Sign Up",
+                          text: "Login here",
                           style: TextStyle(
                             color: AppColors.primary,
                             fontWeight: FontWeight.bold,
