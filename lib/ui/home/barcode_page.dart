@@ -4,28 +4,31 @@ class BarcodePage extends StatelessWidget {
   final List<Map<String, dynamic>> classDetails = [
     {
       "className": "Adult Bungee Workout",
-      "date": "September 10, 2024",
+      "date": "September 6, 2024",
       "price": 150,
-      "barcodeImage": 'assets/images/barcode.png', // Add your barcode image here
+      "barcodeImage": 'assets/images/barcode.png',
+      "attended": true, // User has not attended
     },
     {
       "className": "Kids Bungee Basics",
       "date": "September 12, 2024",
       "price": 100,
-      "barcodeImage": 'assets/images/barcode.png', // Add another barcode image here
+      "barcodeImage": 'assets/images/barcode.png',
+      "attended": false, // User has attended this class
     },
     {
       "className": "Advanced Bungee",
       "date": "September 15, 2024",
       "price": 200,
-      "barcodeImage": 'assets/images/barcode.png', // Add another barcode image here
+      "barcodeImage": 'assets/images/barcode.png',
+      "attended": false, // User has not attended
     },
   ];
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-    
+      
       body: ListView.builder(
         padding: const EdgeInsets.all(16.0),
         itemCount: classDetails.length,
@@ -40,7 +43,7 @@ class BarcodePage extends StatelessWidget {
   Widget _buildClassCard(BuildContext context, Map<String, dynamic> classDetail) {
     return GestureDetector(
       onTap: () {
-        // When tapped, open the barcode image
+        // When tapped, open the barcode detail page
         Navigator.push(
           context,
           MaterialPageRoute(
@@ -49,6 +52,7 @@ class BarcodePage extends StatelessWidget {
               date: classDetail['date'],
               price: classDetail['price'],
               barcodeImage: classDetail['barcodeImage'],
+              attended: classDetail['attended'],
             ),
           ),
         );
@@ -87,6 +91,14 @@ class BarcodePage extends StatelessWidget {
                   color: Colors.blue,
                 ),
               ),
+              if (classDetail['attended'])
+                const Padding(
+                  padding: EdgeInsets.only(top: 8.0),
+                  child: Text(
+                    "Class attended",
+                    style: TextStyle(fontSize: 14, color: Colors.red),
+                  ),
+                ),
             ],
           ),
         ),
@@ -100,6 +112,7 @@ class BarcodeDetailPage extends StatelessWidget {
   final String date;
   final int price;
   final String barcodeImage;
+  final bool attended;
 
   const BarcodeDetailPage({
     Key? key,
@@ -107,6 +120,7 @@ class BarcodeDetailPage extends StatelessWidget {
     required this.date,
     required this.price,
     required this.barcodeImage,
+    required this.attended,
   }) : super(key: key);
 
   @override
@@ -140,16 +154,23 @@ class BarcodeDetailPage extends StatelessWidget {
                 style: const TextStyle(fontSize: 18, color: Colors.blue),
               ),
               const SizedBox(height: 40),
-              // Display the barcode image
-              Image.asset(
-                barcodeImage,
-                height: 150,
-              ),
+              // Display the barcode if not attended, otherwise show a message
+              if (!attended)
+                Image.asset(
+                  barcodeImage,
+                  height: 150,
+                )
+              else
+                const Text(
+                  "You have already attended this class.",
+                  style: TextStyle(fontSize: 16, fontStyle: FontStyle.italic, color: Colors.red),
+                ),
               const SizedBox(height: 20),
-              const Text(
-                "Scan this barcode at the entrance.",
-                style: TextStyle(fontSize: 16, fontStyle: FontStyle.italic),
-              ),
+              if (!attended)
+                const Text(
+                  "Scan this barcode at the entrance.",
+                  style: TextStyle(fontSize: 16, fontStyle: FontStyle.italic),
+                ),
             ],
           ),
         ),
