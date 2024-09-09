@@ -2,7 +2,16 @@ import 'package:flutter/material.dart';
 
 AppBar buildAppBar(BuildContext context) {
   return AppBar(
-    title: const Text("Bungee KSA"),
+    title: const Row(
+      children: [
+        Padding(
+        padding: EdgeInsets.symmetric(horizontal: 8),
+        child: Image(image: AssetImage('assets/images/logo.png'),height: 35,), 
+      ),
+        Text("Bungee KSA"),
+      ],
+    ),
+   
     actions: [
       IconButton(
         icon: const Icon(Icons.notifications),
@@ -10,10 +19,7 @@ AppBar buildAppBar(BuildContext context) {
           // Handle notifications here
         },
       ),
-      const Padding(
-        padding: EdgeInsets.symmetric(horizontal: 16),
-        child: Image(image: AssetImage('assets/images/logo.png'),height: 35,), 
-      ),
+    
     ],
      // Use the primary theme color
   );

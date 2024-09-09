@@ -1,3 +1,4 @@
+import 'package:bungee_ksa/utils/colors.dart';
 import 'package:flutter/material.dart';
 
 class HomePage extends StatelessWidget {
@@ -7,6 +8,9 @@ class HomePage extends StatelessWidget {
       body: ListView(
         padding: const EdgeInsets.all(16.0),
         children: [
+             _buildSectionTitleWithIcon(context,  'assets/images/limited_offer.png'),
+          _buildLimitedTimeOfferSection(context),
+          const SizedBox(height: 16),
           _buildSectionTitle("Private Classes"),
           _buildCarousel(context, ["Private 1", "Private 2", "Private 3"]),
           const SizedBox(height: 16),
@@ -15,6 +19,8 @@ class HomePage extends StatelessWidget {
           const SizedBox(height: 16),
           _buildSectionTitle("Kids Classes"),
           _buildCarousel(context, ["Kids 1", "Kids 2", "Kids 3"]),
+          
+       
         ],
       ),
     );
@@ -30,6 +36,21 @@ class HomePage extends StatelessWidget {
           fontWeight: FontWeight.bold,
         ),
       ),
+    );
+  }
+
+  Widget _buildSectionTitleWithIcon(BuildContext context, String iconPath) {
+    return Row(
+      children: [
+        Image.asset(
+          iconPath,
+          height: 130,
+          width: 130,
+          fit: BoxFit.fill,
+        ),
+       
+      
+      ],
     );
   }
 
@@ -102,6 +123,127 @@ class HomePage extends StatelessWidget {
       context: context,
       builder: (BuildContext context) {
         return ClassDetailsDialog(className: className);
+      },
+    );
+  }
+
+Widget _buildLimitedTimeOfferSection(BuildContext context) {
+  List<Map<String, dynamic>> packages = [
+    {
+      "name": "Start Package",
+      "description": "3 Classes",
+      "price": 1000,
+    },
+    {
+      "name": "Medium Package",
+      "description": "7 Classes",
+      "price": 2000,
+    },
+    {
+      "name": "Ultra Package",
+      "description": "15 Classes",
+      "price": 3000,
+    },
+  ];
+
+  return SizedBox(
+    height: 200,
+    child: ListView.builder(
+      scrollDirection: Axis.horizontal,
+      itemCount: packages.length,
+      itemBuilder: (context, index) {
+        return _buildPackageCard(context, packages[index]['name'], packages[index]['description'], packages[index]['price']);
+      },
+    ),
+  );
+}
+
+
+  Widget _buildPackageCard(BuildContext context, String packageName, String description, int price) {
+  return GestureDetector(
+    onTap: () => _showPackageDetailsDialog(context, packageName, description, price),
+    child: Container(
+      width: 250,  // Adjusted width to make it fit in the carousel
+      margin: const EdgeInsets.symmetric(horizontal: 10.0),  // Add some margin between cards
+      decoration: BoxDecoration(
+        color: Colors.grey.shade200,
+        borderRadius: BorderRadius.circular(15.0),
+        boxShadow: const [
+          BoxShadow(
+            color: Colors.black12,
+            blurRadius: 6,
+            offset: Offset(0, 3),
+          ),
+        ],
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.center,
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Text(
+              packageName,
+              style: const TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              description,
+              style: const TextStyle(
+                fontSize: 16,
+                color: Colors.grey,
+              ),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              "Price: $price SAR",
+              style: const TextStyle(
+                fontSize: 16,
+                color: AppColors.secondary,
+              ),
+            ),
+          ],
+        ),
+      ),
+    ),
+  );
+}
+
+
+  void _showPackageDetailsDialog(BuildContext context, String packageName, String description, int price) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text(packageName),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text("Package Details:"),
+              const SizedBox(height: 8),
+              Text("This package includes $description."),
+              const SizedBox(height: 8),
+              Text("Price: $price SAR"),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(),
+              child: const Text('Close', style: TextStyle(color: Colors.red)),
+            ),
+            TextButton(
+              onPressed: () {
+                // Handle package purchase here
+                Navigator.of(context).pop();
+              },
+              child: const Text('BOOK'),
+            ),
+          ],
+        );
       },
     );
   }
@@ -203,7 +345,7 @@ class _ClassDetailsDialogState extends State<ClassDetailsDialog> {
   }
 
   Widget _buildAvailableHours() {
-    List<String> hours = ["8:00 AM", "9:00 AM", "10:00 AM","11:00 AM", "12:00 AM", "1:00 PM","2:00PM"];
+    List<String> hours = ["8:00 AM", "9:00 AM", "10:00 AM", "11:00 AM", "12:00 PM", "1:00 PM", "2:00 PM"];
 
     return Wrap(
       spacing: 8.0,
