@@ -1,14 +1,15 @@
 import 'package:bungee_ksa/firebase_options.dart';
+import 'package:bungee_ksa/ui/widgets/add_class_form.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:firebase_core/firebase_core.dart'; // Firebase Core package
+import 'package:firebase_core/firebase_core.dart';
 import 'blocs/bloc/auth_bloc.dart';
+import 'blocs/bloc/classes_bloc.dart'; // Add the Classes BLoC
 import 'repo/auth_repository.dart';
 import 'ui/splash.dart';
 import 'ui/onboarding/onboarding_screen.dart';
 import 'ui/home/home_screen.dart';
-
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -31,13 +32,15 @@ class MyApp extends StatelessWidget {
         BlocProvider<AuthBloc>(
           create: (context) => AuthBloc(),
         ),
+        BlocProvider<ClassesBloc>(
+          create: (context) => ClassesBloc(),
+        ),
         // Add other BLoCs here if needed
       ],
       child: MaterialApp(
         title: 'Bungee KSA',
         debugShowCheckedModeBanner: false,
         theme: ThemeData(
-          // Global text theme using Bebas Neue
           textTheme: GoogleFonts.bebasNeueTextTheme(
             Theme.of(context).textTheme,
           ),
@@ -53,6 +56,7 @@ class MyApp extends StatelessWidget {
           '/': (context) => SplashScreen(),
           '/onboarding': (context) => OnboardingScreen(),
           '/home': (context) => HomeScreen(),
+          '/add-class': (context) => AddClassScreen(), // AddClassScreen route
           // Add more routes as needed
         },
       ),

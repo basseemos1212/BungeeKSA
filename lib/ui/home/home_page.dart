@@ -1,27 +1,54 @@
-import 'package:bungee_ksa/utils/colors.dart';
+import 'package:bungee_ksa/blocs/states/classes_state.dart';
+import 'package:bungee_ksa/ui/widgets/classes_detail_dialog.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:bungee_ksa/blocs/bloc/classes_bloc.dart';
+
+import '../../blocs/events/classes_event.dart';
 
 class HomePage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
+    // Trigger the FetchClasses event to start the real-time stream
+    context.read<ClassesBloc>().add(FetchClasses());
+
     return Scaffold(
-      body: ListView(
-        padding: const EdgeInsets.all(16.0),
-        children: [
-             _buildSectionTitleWithIcon(context,  'assets/images/limited_offer.png'),
-          _buildLimitedTimeOfferSection(context),
-          const SizedBox(height: 16),
-          _buildSectionTitle("Private Classes"),
-          _buildCarousel(context, ["Private 1", "Private 2", "Private 3"]),
-          const SizedBox(height: 16),
-          _buildSectionTitle("Adult Classes"),
-          _buildCarousel(context, ["Adult 1", "Adult 2", "Adult 3"]),
-          const SizedBox(height: 16),
-          _buildSectionTitle("Kids Classes"),
-          _buildCarousel(context, ["Kids 1", "Kids 2", "Kids 3"]),
-          
-       
+      appBar: AppBar(
+        title: const Text('Bungee Classes'),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.add),
+            onPressed: () => Navigator.pushNamed(context, '/add-class'),
+          ),
         ],
+      ),
+      body: BlocBuilder<ClassesBloc, ClassesState>(
+        builder: (context, state) {
+          if (state is ClassesLoading) {
+            return const Center(child: CircularProgressIndicator());
+          } else if (state is ClassesLoaded) {
+            return ListView(
+              padding: const EdgeInsets.all(16.0),
+              children: [
+                _buildSectionTitleWithIcon(context, 'assets/images/limited_offer.png'),
+                _buildCarouselWithType(context, 'Hot Deals', state.classes),
+                const SizedBox(height: 16),
+                _buildSectionTitle("Private Classes"),
+                _buildCarouselWithType(context, 'Private', state.classes),
+                const SizedBox(height: 16),
+                _buildSectionTitle("Adult Classes"),
+                _buildCarouselWithType(context, 'Adult', state.classes),
+                const SizedBox(height: 16),
+                _buildSectionTitle("Kids Classes"),
+                _buildCarouselWithType(context, 'Kids', state.classes),
+              ],
+            );
+          } else if (state is ClassesError) {
+            return Center(child: Text(state.message));
+          }
+          return Container();
+        },
       ),
     );
   }
@@ -31,10 +58,7 @@ class HomePage extends StatelessWidget {
       padding: const EdgeInsets.symmetric(vertical: 8.0),
       child: Text(
         title,
-        style: const TextStyle(
-          fontSize: 20,
-          fontWeight: FontWeight.bold,
-        ),
+        style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
       ),
     );
   }
@@ -48,28 +72,42 @@ class HomePage extends StatelessWidget {
           width: 130,
           fit: BoxFit.fill,
         ),
-       
-      
       ],
     );
   }
 
-  Widget _buildCarousel(BuildContext context, List<String> items) {
+  Widget _buildCarouselWithType(BuildContext context, String classType, List<DocumentSnapshot> classes) {
+    // Filter classes by the type (i.e., Private, Adult, Kids, etc.)
+    final filteredClasses = classes.where((doc) => doc['type'] == classType).toList();
+
+    if (filteredClasses.isEmpty) {
+      return Center(child: Text('No $classType classes available.'));
+    }
+
     return SizedBox(
       height: 200,
       child: ListView.builder(
         scrollDirection: Axis.horizontal,
-        itemCount: items.length,
+        itemCount: filteredClasses.length,
         itemBuilder: (context, index) {
-          return _buildClassCard(context, items[index]);
+          return _buildClassCard(context, filteredClasses[index]);
         },
       ),
     );
   }
 
-  Widget _buildClassCard(BuildContext context, String className) {
+  Widget _buildClassCard(BuildContext context, DocumentSnapshot classDoc) {
+    // Ensure fields exist and have valid values
+    final String className = classDoc['name'] ?? 'Unknown Class';
+    final int? price = classDoc['price'];
+
+    // Handle cases where price or className might be missing
+    if (price == null) {
+      return const Center(child: Text('Invalid class data'));
+    }
+
     return GestureDetector(
-      onTap: () => _showClassDetailsDialog(context, className),
+      onTap: () => _showClassDetailsDialog(context, classDoc),
       child: Container(
         width: 150,
         margin: const EdgeInsets.symmetric(horizontal: 8.0),
@@ -77,17 +115,15 @@ class HomePage extends StatelessWidget {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            _buildImage('assets/images/logo.png', 100),
-            const SizedBox(height: 8),
             Text(
               className,
               style: Theme.of(context).textTheme.headlineMedium,
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 4),
-            const Text(
-              'Description here',
-              style: TextStyle(fontSize: 12, color: Colors.grey),
+            Text(
+              'Price: $price SAR',
+              style: const TextStyle(fontSize: 12, color: Colors.grey),
               textAlign: TextAlign.center,
             ),
           ],
@@ -110,281 +146,29 @@ class HomePage extends StatelessWidget {
     );
   }
 
-  Widget _buildImage(String path, double size) {
-    return Image.asset(
-      path,
-      height: size,
-      width: size,
-    );
-  }
+  void _showClassDetailsDialog(BuildContext context, DocumentSnapshot classDoc) {
+    final String className = classDoc['name'] ?? 'Unknown Class';
+    final int? price = classDoc['price'];
+    final String classDocId = classDoc.id;
 
-  void _showClassDetailsDialog(BuildContext context, String className) {
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return ClassDetailsDialog(className: className);
-      },
-    );
-  }
-
-Widget _buildLimitedTimeOfferSection(BuildContext context) {
-  List<Map<String, dynamic>> packages = [
-    {
-      "name": "Start Package",
-      "description": "3 Classes",
-      "price": 1000,
-    },
-    {
-      "name": "Medium Package",
-      "description": "7 Classes",
-      "price": 2000,
-    },
-    {
-      "name": "Ultra Package",
-      "description": "15 Classes",
-      "price": 3000,
-    },
-  ];
-
-  return SizedBox(
-    height: 200,
-    child: ListView.builder(
-      scrollDirection: Axis.horizontal,
-      itemCount: packages.length,
-      itemBuilder: (context, index) {
-        return _buildPackageCard(context, packages[index]['name'], packages[index]['description'], packages[index]['price']);
-      },
-    ),
-  );
-}
-
-
-  Widget _buildPackageCard(BuildContext context, String packageName, String description, int price) {
-  return GestureDetector(
-    onTap: () => _showPackageDetailsDialog(context, packageName, description, price),
-    child: Container(
-      width: 250,  // Adjusted width to make it fit in the carousel
-      margin: const EdgeInsets.symmetric(horizontal: 10.0),  // Add some margin between cards
-      decoration: BoxDecoration(
-        color: Colors.grey.shade200,
-        borderRadius: BorderRadius.circular(15.0),
-        boxShadow: const [
-          BoxShadow(
-            color: Colors.black12,
-            blurRadius: 6,
-            offset: Offset(0, 3),
-          ),
-        ],
-      ),
-      child: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.center,
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Text(
-              packageName,
-              style: const TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-            const SizedBox(height: 8),
-            Text(
-              description,
-              style: const TextStyle(
-                fontSize: 16,
-                color: Colors.grey,
-              ),
-            ),
-            const SizedBox(height: 8),
-            Text(
-              "Price: $price SAR",
-              style: const TextStyle(
-                fontSize: 16,
-                color: AppColors.secondary,
-              ),
-            ),
-          ],
-        ),
-      ),
-    ),
-  );
-}
-
-
-  void _showPackageDetailsDialog(BuildContext context, String packageName, String description, int price) {
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: Text(packageName),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text("Package Details:"),
-              const SizedBox(height: 8),
-              Text("This package includes $description."),
-              const SizedBox(height: 8),
-              Text("Price: $price SAR"),
-            ],
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.of(context).pop(),
-              child: const Text('Close', style: TextStyle(color: Colors.red)),
-            ),
-            TextButton(
-              onPressed: () {
-                // Handle package purchase here
-                Navigator.of(context).pop();
-              },
-              child: const Text('BOOK'),
-            ),
-          ],
-        );
-      },
-    );
-  }
-}
-
-class ClassDetailsDialog extends StatefulWidget {
-  final String className;
-
-  const ClassDetailsDialog({Key? key, required this.className}) : super(key: key);
-
-  @override
-  _ClassDetailsDialogState createState() => _ClassDetailsDialogState();
-}
-
-class _ClassDetailsDialogState extends State<ClassDetailsDialog> {
-  String? _selectedDay;
-  String? _selectedHour;
-
-  @override
-  Widget build(BuildContext context) {
-    return AlertDialog(
-      title: Text(widget.className),
-      content: SingleChildScrollView(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            _buildTrainerInfo(),
-            const SizedBox(height: 20),
-            _buildSectionTitle("Available Times:"),
-            const Text("Sunday - Thursday, 8 AM - 10 AM"),
-            const Text("Location: Bungee Fitness Center, Room 3"),
-            const SizedBox(height: 20),
-            _buildSectionTitle("Available Days:"),
-            _buildAvailableDays(),
-            if (_selectedDay != null) ...[
-              const SizedBox(height: 20),
-              _buildSectionTitle("Available Hours:"),
-              _buildAvailableHours(),
-            ],
-          ],
-        ),
-      ),
-      actions: [
-        TextButton(
-          onPressed: () => Navigator.of(context).pop(),
-          child: const Text('Close', style: TextStyle(color: Colors.red)),
-        ),
-        TextButton(
-          onPressed: _selectedDay != null && _selectedHour != null
-              ? () {
-                  // Handle booking logic here
-                  Navigator.of(context).pop();
-                }
-              : null, // Disable if no day or hour is selected
-          child: const Text('Book'),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildTrainerInfo() {
-    return Row(
-      children: [
-        _buildImage('assets/images/trainer.png', 50),
-        const SizedBox(width: 10),
-        const Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              "Trainer: Hanan Mohamed",
-              style: TextStyle(fontWeight: FontWeight.bold),
-            ),
-            Text("Expert in Bungee Workouts"),
-          ],
-        ),
-      ],
-    );
-  }
-
-  Widget _buildAvailableDays() {
-    List<String> days = ["Sun", "Mon", "Tue"];
-
-    return Wrap(
-      spacing: 8.0,
-      children: days.map((day) {
-        return ChoiceChip(
-          label: Text(day),
-          selected: _selectedDay == day,
-          onSelected: (bool selected) {
-            setState(() {
-              _selectedDay = selected ? day : null;
-              _selectedHour = null; // Reset selected hour when day changes
-            });
-          },
-          selectedColor: Colors.greenAccent,
-        );
-      }).toList(),
-    );
-  }
-
-  Widget _buildAvailableHours() {
-    List<String> hours = ["8:00 AM", "9:00 AM", "10:00 AM", "11:00 AM", "12:00 PM", "1:00 PM", "2:00 PM"];
-
-    return Wrap(
-      spacing: 8.0,
-      children: hours.map((hour) {
-        return Padding(
-          padding: const EdgeInsets.all(2.0),
-          child: ChoiceChip(
-            label: Text(hour),
-            selected: _selectedHour == hour,
-            onSelected: (bool selected) {
-              setState(() {
-                _selectedHour = selected ? hour : null;
-              });
-            },
-            selectedColor: Colors.blueAccent,
-          ),
-        );
-      }).toList(),
-    );
-  }
-
-  Widget _buildSectionTitle(String title) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 8.0),
-      child: Text(
-        title,
-        style: const TextStyle(
-          fontSize: 16,
-          fontWeight: FontWeight.bold,
-        ),
-      ),
-    );
-  }
-
-  Widget _buildImage(String path, double size) {
-    return Image.asset(
-      path,
-      height: size,
-      width: size,
-    );
+    // Check if price is valid before showing the dialog
+    if (price != null) {
+      showDialog(
+        context: context,
+        builder: (BuildContext context) {
+          return ClassDetailsDialog(
+            className: className,
+            classType: classDoc['type'],
+            price: price,
+            classDocId: classDocId,
+          );
+        },
+      );
+    } else {
+      // Show error message if class data is invalid
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Invalid class data.')),
+      );
+    }
   }
 }

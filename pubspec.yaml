@@ -44,6 +44,7 @@ dependencies:
   flutter_bloc: ^8.1.6
   equatable: ^2.0.5
   cloud_firestore: ^5.4.0
+  barcode_widget: ^2.0.4
 
 dev_dependencies:
   flutter_test:
