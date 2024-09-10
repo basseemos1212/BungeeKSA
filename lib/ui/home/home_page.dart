@@ -1,54 +1,37 @@
-import 'package:bungee_ksa/blocs/states/classes_state.dart';
-import 'package:bungee_ksa/ui/widgets/classes_detail_dialog.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:bungee_ksa/blocs/bloc/classes_bloc.dart';
-
-import '../../blocs/events/classes_event.dart';
+import 'package:bungee_ksa/ui/widgets/classes_detail_dialog.dart';
 
 class HomePage extends StatelessWidget {
+  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+
   @override
   Widget build(BuildContext context) {
-    // Trigger the FetchClasses event to start the real-time stream
-    context.read<ClassesBloc>().add(FetchClasses());
-
     return Scaffold(
       appBar: AppBar(
         title: const Text('Bungee Classes'),
         actions: [
           IconButton(
             icon: const Icon(Icons.add),
-            onPressed: () => Navigator.pushNamed(context, '/add-class'),
+            onPressed: () => Navigator.pushNamed(context, '/add-class'), // Navigate to AddClassScreen
           ),
         ],
       ),
-      body: BlocBuilder<ClassesBloc, ClassesState>(
-        builder: (context, state) {
-          if (state is ClassesLoading) {
-            return const Center(child: CircularProgressIndicator());
-          } else if (state is ClassesLoaded) {
-            return ListView(
-              padding: const EdgeInsets.all(16.0),
-              children: [
-                _buildSectionTitleWithIcon(context, 'assets/images/limited_offer.png'),
-                _buildCarouselWithType(context, 'Hot Deals', state.classes),
-                const SizedBox(height: 16),
-                _buildSectionTitle("Private Classes"),
-                _buildCarouselWithType(context, 'Private', state.classes),
-                const SizedBox(height: 16),
-                _buildSectionTitle("Adult Classes"),
-                _buildCarouselWithType(context, 'Adult', state.classes),
-                const SizedBox(height: 16),
-                _buildSectionTitle("Kids Classes"),
-                _buildCarouselWithType(context, 'Kids', state.classes),
-              ],
-            );
-          } else if (state is ClassesError) {
-            return Center(child: Text(state.message));
-          }
-          return Container();
-        },
+      body: ListView(
+        padding: const EdgeInsets.all(16.0),
+        children: [
+          _buildSectionTitleWithIcon(context, 'assets/images/limited_offer.png'),
+          _buildCarouselWithType(context, 'Hot Deals'),
+          const SizedBox(height: 16),
+          _buildSectionTitle("Private Classes"),
+          _buildCarouselWithType(context, 'Private'),
+          const SizedBox(height: 16),
+          _buildSectionTitle("Adult Classes"),
+          _buildCarouselWithType(context, 'Adult'),
+          const SizedBox(height: 16),
+          _buildSectionTitle("Kids Classes"),
+          _buildCarouselWithType(context, 'Kids'),
+        ],
       ),
     );
   }
@@ -76,35 +59,37 @@ class HomePage extends StatelessWidget {
     );
   }
 
-  Widget _buildCarouselWithType(BuildContext context, String classType, List<DocumentSnapshot> classes) {
-    // Filter classes by the type (i.e., Private, Adult, Kids, etc.)
-    final filteredClasses = classes.where((doc) => doc['type'] == classType).toList();
+  Widget _buildCarouselWithType(BuildContext context, String classType) {
+    return StreamBuilder<QuerySnapshot>(
+      stream: _firestore.collection('classes').where('type', isEqualTo: classType).snapshots(),
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return const Center(child: CircularProgressIndicator());
+        }
 
-    if (filteredClasses.isEmpty) {
-      return Center(child: Text('No $classType classes available.'));
-    }
+        if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
+          return Center(child: Text('No $classType classes available.'));
+        }
 
-    return SizedBox(
-      height: 200,
-      child: ListView.builder(
-        scrollDirection: Axis.horizontal,
-        itemCount: filteredClasses.length,
-        itemBuilder: (context, index) {
-          return _buildClassCard(context, filteredClasses[index]);
-        },
-      ),
+        List<DocumentSnapshot> classes = snapshot.data!.docs;
+
+        return SizedBox(
+          height: 200,
+          child: ListView.builder(
+            scrollDirection: Axis.horizontal,
+            itemCount: classes.length,
+            itemBuilder: (context, index) {
+              return _buildClassCard(context, classes[index]);
+            },
+          ),
+        );
+      },
     );
   }
 
   Widget _buildClassCard(BuildContext context, DocumentSnapshot classDoc) {
-    // Ensure fields exist and have valid values
-    final String className = classDoc['name'] ?? 'Unknown Class';
-    final int? price = classDoc['price'];
-
-    // Handle cases where price or className might be missing
-    if (price == null) {
-      return const Center(child: Text('Invalid class data'));
-    }
+    String className = classDoc['name'];
+    int price = classDoc['price'];
 
     return GestureDetector(
       onTap: () => _showClassDetailsDialog(context, classDoc),
@@ -147,28 +132,20 @@ class HomePage extends StatelessWidget {
   }
 
   void _showClassDetailsDialog(BuildContext context, DocumentSnapshot classDoc) {
-    final String className = classDoc['name'] ?? 'Unknown Class';
-    final int? price = classDoc['price'];
-    final String classDocId = classDoc.id;
+    String className = classDoc['name'];
+    int price = classDoc['price'];
+    String classDocId = classDoc.id;
 
-    // Check if price is valid before showing the dialog
-    if (price != null) {
-      showDialog(
-        context: context,
-        builder: (BuildContext context) {
-          return ClassDetailsDialog(
-            className: className,
-            classType: classDoc['type'],
-            price: price,
-            classDocId: classDocId,
-          );
-        },
-      );
-    } else {
-      // Show error message if class data is invalid
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Invalid class data.')),
-      );
-    }
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return ClassDetailsDialog(
+          className: className,
+          classType: classDoc['type'],
+          price: price,
+          classDocId: classDocId,
+        );
+      },
+    );
   }
 }
