@@ -1,65 +1,115 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:bungee_ksa/ui/widgets/classes_detail_dialog.dart';
 
-class HomePage extends StatelessWidget {
+class HomePage extends StatefulWidget {
+  @override
+  _HomePageState createState() => _HomePageState();
+}
+
+class _HomePageState extends State<HomePage> {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+  final FirebaseAuth _auth = FirebaseAuth.instance;
+  late ScaffoldMessengerState _scaffoldMessenger;
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    _scaffoldMessenger = ScaffoldMessenger.of(context);
+  }
 
   @override
   Widget build(BuildContext context) {
+    final User? user = _auth.currentUser;
+    final String? userEmail = user?.email;
+
     return Scaffold(
       appBar: AppBar(
         title: const Text('Bungee Classes'),
         actions: [
-          IconButton(
-            icon: const Icon(Icons.add),
-            onPressed: () => Navigator.pushNamed(context, '/add-class'), // Navigate to AddClassScreen
-          ),
+          if (userEmail != null && (userEmail.contains('@admin') || userEmail.contains('@manager')))
+            IconButton(
+              icon: const Icon(Icons.add),
+              onPressed: () => Navigator.pushNamed(context, '/add-class'), // Navigate to AddClassScreen
+            ),
+          if (userEmail != null && userEmail.contains('@admin'))
+            IconButton(
+              icon: const Icon(Icons.category),
+              onPressed: () => Navigator.pushNamed(context, '/add-class-type'), // Navigate to AddClassTypeScreen
+            ),
         ],
       ),
-      body: ListView(
-        padding: const EdgeInsets.all(16.0),
-        children: [
-          _buildSectionTitleWithIcon(context, 'assets/images/limited_offer.png'),
-          _buildCarouselWithType(context, 'Hot Deals'),
-          const SizedBox(height: 16),
-          _buildSectionTitle("Private Classes"),
-          _buildCarouselWithType(context, 'Private'),
-          const SizedBox(height: 16),
-          _buildSectionTitle("Adult Classes"),
-          _buildCarouselWithType(context, 'Adult'),
-          const SizedBox(height: 16),
-          _buildSectionTitle("Kids Classes"),
-          _buildCarouselWithType(context, 'Kids'),
-        ],
+      body: StreamBuilder<QuerySnapshot>(
+        stream: _firestore.collection('classTypes').snapshots(),
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return const Center(child: CircularProgressIndicator());
+          }
+
+          if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
+            return const Center(child: Text('No class types available.'));
+          }
+
+          List<DocumentSnapshot> classTypes = snapshot.data!.docs;
+
+          // Reorder classTypes to ensure "Limited Offer" appears first
+          classTypes.sort((a, b) {
+            if (a['name'].toLowerCase() == "limited offer") return -1;
+            if (b['name'].toLowerCase() == "limited offer") return 1;
+            return 0;
+          });
+
+          return ListView.builder(
+            padding: const EdgeInsets.all(16.0),
+            itemCount: classTypes.length,
+            itemBuilder: (context, index) {
+              final classTypeDoc = classTypes[index];
+              final classType = classTypeDoc['name'];
+
+              return Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  _buildSectionTitle(context, classType, classTypeDoc.id, userEmail),
+                  const SizedBox(height: 0),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 15),
+                    child: _buildCarouselWithType(context, classType, userEmail),
+                  ),
+                ],
+              );
+            },
+          );
+        },
       ),
     );
   }
 
-  Widget _buildSectionTitle(String title) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 8.0),
-      child: Text(
-        title,
-        style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-      ),
-    );
-  }
-
-  Widget _buildSectionTitleWithIcon(BuildContext context, String iconPath) {
+  // Widget to build the section title with the option to delete the class type (for admins)
+  Widget _buildSectionTitle(BuildContext context, String classType, String classTypeId, String? userEmail) {
     return Row(
       children: [
-        Image.asset(
-          iconPath,
-          height: 130,
-          width: 130,
-          fit: BoxFit.fill,
-        ),
+        if (classType.toLowerCase() == "limited offer") // If class type is "Limited Offer", show the image
+          Image.asset(
+            'assets/images/limited_offer.png', // Path to the Limited Offer image
+            height: 130,
+          )
+        else // Otherwise, show the class type name
+          Text(
+            classType,
+            style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+          ),
+        if (userEmail != null && userEmail.contains('@admin')) // Add delete button for admins
+          IconButton(
+            icon: const Icon(Icons.delete, color: Colors.red),
+            onPressed: () => _deleteClassTypeWithClasses(context, classTypeId),
+          ),
       ],
     );
   }
 
-  Widget _buildCarouselWithType(BuildContext context, String classType) {
+  // Function to build the list of classes based on the class type
+  Widget _buildCarouselWithType(BuildContext context, String classType, String? userEmail) {
     return StreamBuilder<QuerySnapshot>(
       stream: _firestore.collection('classes').where('type', isEqualTo: classType).snapshots(),
       builder: (context, snapshot) {
@@ -71,7 +121,7 @@ class HomePage extends StatelessWidget {
           return Center(child: Text('No $classType classes available.'));
         }
 
-        List<DocumentSnapshot> classes = snapshot.data!.docs;
+        final classes = snapshot.data!.docs;
 
         return SizedBox(
           height: 200,
@@ -79,7 +129,7 @@ class HomePage extends StatelessWidget {
             scrollDirection: Axis.horizontal,
             itemCount: classes.length,
             itemBuilder: (context, index) {
-              return _buildClassCard(context, classes[index]);
+              return _buildClassCard(context, classes[index], userEmail);
             },
           ),
         );
@@ -87,9 +137,9 @@ class HomePage extends StatelessWidget {
     );
   }
 
-  Widget _buildClassCard(BuildContext context, DocumentSnapshot classDoc) {
-    String className = classDoc['name'];
-    int price = classDoc['price'];
+  Widget _buildClassCard(BuildContext context, DocumentSnapshot classDoc, String? userEmail) {
+    final String className = classDoc['name'];
+    final int price = classDoc['price'];
 
     return GestureDetector(
       onTap: () => _showClassDetailsDialog(context, classDoc),
@@ -101,8 +151,8 @@ class HomePage extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Text(
-              className,
-              style: Theme.of(context).textTheme.headlineMedium,
+              className,  // Always show the class name
+              style: Theme.of(context).textTheme.headlineSmall,
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 4),
@@ -111,6 +161,12 @@ class HomePage extends StatelessWidget {
               style: const TextStyle(fontSize: 12, color: Colors.grey),
               textAlign: TextAlign.center,
             ),
+            if (userEmail != null && userEmail.contains('@admin')) ...[
+              IconButton(
+                icon: const Icon(Icons.delete, color: Colors.red),
+                onPressed: () => _deleteClass(classDoc.id),
+              ),
+            ],
           ],
         ),
       ),
@@ -132,9 +188,9 @@ class HomePage extends StatelessWidget {
   }
 
   void _showClassDetailsDialog(BuildContext context, DocumentSnapshot classDoc) {
-    String className = classDoc['name'];
-    int price = classDoc['price'];
-    String classDocId = classDoc.id;
+    final String className = classDoc['name'];
+    final int price = classDoc['price'];
+    final String classDocId = classDoc.id;
 
     showDialog(
       context: context,
@@ -147,5 +203,41 @@ class HomePage extends StatelessWidget {
         );
       },
     );
+  }
+
+  // Function to delete a class and show a confirmation message
+  Future<void> _deleteClass(String classDocId) async {
+    try {
+      await _firestore.collection('classes').doc(classDocId).delete();
+      _scaffoldMessenger.showSnackBar(
+        const SnackBar(content: Text('Class deleted successfully')),
+      );
+    } catch (e) {
+      _scaffoldMessenger.showSnackBar(
+        SnackBar(content: Text('Failed to delete class: $e')),
+      );
+    }
+  }
+
+  // Function to delete a class type and all associated classes
+  Future<void> _deleteClassTypeWithClasses(BuildContext context, String classTypeId) async {
+    try {
+      // First, delete all classes associated with this class type
+      final classesQuerySnapshot = await _firestore.collection('classes').where('typeId', isEqualTo: classTypeId).get();
+      for (var classDoc in classesQuerySnapshot.docs) {
+        await _firestore.collection('classes').doc(classDoc.id).delete();
+      }
+
+      // Then delete the class type itself
+      await _firestore.collection('classTypes').doc(classTypeId).delete();
+      
+      _scaffoldMessenger.showSnackBar(
+        const SnackBar(content: Text('Class type and associated classes deleted successfully')),
+      );
+    } catch (e) {
+      _scaffoldMessenger.showSnackBar(
+        SnackBar(content: Text('Failed to delete class type: $e')),
+      );
+    }
   }
 }

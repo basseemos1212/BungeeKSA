@@ -1,6 +1,8 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:bungee_ksa/utils/colors.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:intl/intl.dart';
 
 class ClassDetailsDialog extends StatefulWidget {
   final String className;
@@ -32,21 +34,28 @@ class _ClassDetailsDialogState extends State<ClassDetailsDialog> {
     _fetchClassData();
   }
 
-Future<void> _fetchClassData() async {
-  final doc = await _firestore.collection('classes').doc(widget.classDocId).get();
-  if (doc.exists) {
-    setState(() {
-      final dynamicData = doc['available_times'];
-      // Ensure the data structure is properly cast to the correct type
-      availableTimes = (dynamicData as Map<String, dynamic>).map((day, hours) {
-        return MapEntry(day, (hours as Map<String, dynamic>).map((hour, seats) {
-          return MapEntry(hour, seats as int);
-        }));
+  Future<void> _fetchClassData() async {
+    final doc = await _firestore.collection('classes').doc(widget.classDocId).get();
+    if (doc.exists) {
+      setState(() {
+        final dynamicData = doc['available_times'];
+        // Get the current date
+        final now = DateTime.now();
+        availableTimes = (dynamicData as Map<String, dynamic>).map((day, hours) {
+          DateTime parsedDay = DateFormat('yyyy-MM-dd').parse(day);
+          // Include today and future dates only
+          if (parsedDay.isAfter(now) || DateFormat('yyyy-MM-dd').format(parsedDay) == DateFormat('yyyy-MM-dd').format(now)) {
+            return MapEntry(day, (hours as Map<String, dynamic>).map((hour, seats) {
+              return MapEntry(hour, seats as int);
+            }));
+          }
+          return MapEntry("", {}); // Empty entry for past dates
+        });
+        // Remove invalid entries (past dates)
+        availableTimes.removeWhere((key, value) => key.isEmpty);
       });
-    });
+    }
   }
-}
-
 
   @override
   Widget build(BuildContext context) {
@@ -103,7 +112,7 @@ Future<void> _fetchClassData() async {
                   _selectedHour = null; // Reset hour selection
                 });
               },
-              selectedColor: Colors.greenAccent,
+              selectedColor: AppColors.secondary,
             );
           }).toList(),
         ),
@@ -113,6 +122,22 @@ Future<void> _fetchClassData() async {
 
   Widget _buildAvailableHours() {
     final availableHours = availableTimes[_selectedDay]!.keys.toList();
+    final now = DateTime.now();
+
+    // Parse the selected day to compare with the current date
+    final DateTime selectedDayDate = DateFormat('yyyy-MM-dd').parse(_selectedDay!);
+    
+    // Only filter hours for today; future days show all hours
+    final filteredAvailableHours = availableHours.where((hour) {
+      if (DateFormat('yyyy-MM-dd').format(selectedDayDate) == DateFormat('yyyy-MM-dd').format(now)) {
+        // Parse the hour to DateTime and compare with the current time
+        DateTime parsedHour = DateFormat('h:mm a').parse(hour);
+        DateTime todayHour = DateTime(now.year, now.month, now.day, parsedHour.hour, parsedHour.minute);
+        return todayHour.isAfter(now);
+      }
+      return true; // Keep all hours for future days
+    }).toList();
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -120,7 +145,7 @@ Future<void> _fetchClassData() async {
         const SizedBox(height: 8),
         Wrap(
           spacing: 8.0,
-          children: availableHours.map((hour) {
+          children: filteredAvailableHours.map((hour) {
             int availableSeats = availableTimes[_selectedDay]![hour]!;
             return ChoiceChip(
               label: Text("$hour (${availableSeats} seats left)"),
@@ -132,7 +157,7 @@ Future<void> _fetchClassData() async {
                   });
                 }
               },
-              selectedColor: Colors.blueAccent,
+              selectedColor: AppColors.accent,
               disabledColor: availableSeats == 0 ? Colors.grey.shade300 : null,
             );
           }).toList(),
@@ -141,66 +166,51 @@ Future<void> _fetchClassData() async {
     );
   }
 
- Future<void> _bookClass() async {
-  if (_selectedDay != null && _selectedHour != null) {
-    // Convert selected day to string format for Firestore
-    String selectedDayString = _selectedDay!; // assuming _selectedDay is already a formatted string like '2024-09-10'
+  Future<void> _bookClass() async {
+    if (_selectedDay != null && _selectedHour != null) {
+      String selectedDayString = _selectedDay!;
 
-    // Ensure availableTimes for selected day and hour are not null before reducing seats
-    if (availableTimes[selectedDayString] != null && availableTimes[selectedDayString]![_selectedHour!] != null) {
-      int currentSeats = availableTimes[selectedDayString]![_selectedHour!] as int;
+      if (availableTimes[selectedDayString] != null && availableTimes[selectedDayString]![_selectedHour!] != null) {
+        int currentSeats = availableTimes[selectedDayString]![_selectedHour!] as int;
 
-      if (currentSeats > 0) {
-        // Retrieve the user ID for booking (assumes user is already authenticated)
-        final userId = FirebaseAuth.instance.currentUser?.uid;
+        if (currentSeats > 0) {
+          final userId = FirebaseAuth.instance.currentUser?.uid;
 
-        if (userId != null) {
-          // Create booking data
-          final bookingData = {
-            'userId': userId,
-            'className': widget.className,
-            'classType': widget.classType,
-            'date': selectedDayString,
-            'hour': _selectedHour,
-            'price': widget.price,
-          };
+          if (userId != null) {
+            final bookingData = {
+              'userId': userId,
+              'className': widget.className,
+              'classType': widget.classType,
+              'date': selectedDayString,
+              'hour': _selectedHour,
+              'price': widget.price,
+            };
 
-          // Add booking data to Firestore (bookings collection)
-          await _firestore.collection('bookings').add(bookingData);
+            await _firestore.collection('bookings').add(bookingData);
 
-          // Reduce available seats for the specific hour on the selected day
-          availableTimes[selectedDayString]![_selectedHour!] = currentSeats - 1;
+            availableTimes[selectedDayString]![_selectedHour!] = currentSeats - 1;
 
-          // Update Firestore document with reduced seats for the specific day and hour
-          await _firestore.collection('classes').doc(widget.classDocId).update({
-            'available_times': availableTimes,
-          });
-
-          // Check if widget is mounted before calling setState
-          if (mounted) {
-            setState(() {
-              // Update the UI after booking
+            await _firestore.collection('classes').doc(widget.classDocId).update({
+              'available_times': availableTimes,
             });
 
-            // Show success message
+            if (mounted) {
+              setState(() {});
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(content: Text('Booking successful!')),
+              );
+            }
+          } else {
             ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(content: Text('Booking successful!')),
+              SnackBar(content: Text('User not logged in!')),
             );
           }
         } else {
-          // Show error if user is not logged in
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('User not logged in!')),
+            SnackBar(content: Text('No available seats for the selected time.')),
           );
         }
-      } else {
-        // Notify user that no seats are available
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('No available seats for the selected time.')),
-        );
       }
     }
   }
-}
-
 }

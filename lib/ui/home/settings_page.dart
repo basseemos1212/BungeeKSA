@@ -1,10 +1,12 @@
+import 'package:firebase_auth/firebase_auth.dart'; // Import Firebase Auth package
 import 'package:flutter/material.dart';
 
 class SettingsPage extends StatelessWidget {
+  final FirebaseAuth _auth = FirebaseAuth.instance; // Firebase Authentication instance
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      
       body: ListView(
         padding: const EdgeInsets.all(16.0),
         children: [
@@ -16,7 +18,6 @@ class SettingsPage extends StatelessWidget {
               // Change Password Logic
             },
           ),
-        
           _buildListTile(
             icon: Icons.phone,
             title: "Update Phone Number",
@@ -27,8 +28,8 @@ class SettingsPage extends StatelessWidget {
           _buildListTile(
             icon: Icons.logout,
             title: "Log Out",
-            onTap: () {
-              // Log Out Logic
+            onTap: () async {
+              await _logOut(context); // Call the log-out function
             },
           ),
           const Divider(),
@@ -74,6 +75,20 @@ class SettingsPage extends StatelessWidget {
         ],
       ),
     );
+  }
+
+  // Function to handle logout and navigation to the login screen
+  Future<void> _logOut(BuildContext context) async {
+    try {
+      await _auth.signOut(); // Log out from Firebase
+      // Navigate to the login screen after successful logout
+      Navigator.of(context).pushNamedAndRemoveUntil('/login', (Route<dynamic> route) => false);
+    } catch (e) {
+      // Handle any errors during logout
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Failed to log out: $e')),
+      );
+    }
   }
 
   Widget _buildSectionTitle(String title) {

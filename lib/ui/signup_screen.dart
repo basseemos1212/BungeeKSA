@@ -1,11 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import '../blocs/bloc/auth_bloc.dart';
 import '../blocs/events/auth_event.dart';
 import '../blocs/states/auth_state.dart';
 import '../utils/colors.dart';
 import 'widgets/custom_button.dart';
 import 'widgets/custom_text_field.dart';
+import 'package:email_validator/email_validator.dart'; // Add email validator package for validation
 
 class SignUpScreen extends StatelessWidget {
   final TextEditingController _nameController = TextEditingController();
@@ -104,24 +106,68 @@ class SignUpScreen extends StatelessWidget {
                   Center(
                     child: CustomButton(
                       text: "CREATE",
-                      onPressed: () {
-                        if (_passwordController.text ==
-                            _confirmPasswordController.text) {
-                          // Trigger sign-up event
-                          BlocProvider.of<AuthBloc>(context).add(
-                            SignUpRequested(
-                              _emailController.text,
-                              _passwordController.text,
-                              _nameController.text,
-                              _phoneController.text
-                            ),
-                          );
-                        } else {
-                          // Show error message if passwords don't match
+                      onPressed: () async {
+                        final email = _emailController.text.trim();
+                        final password = _passwordController.text.trim();
+                        final confirmPassword = _confirmPasswordController.text.trim();
+                        final name = _nameController.text.trim();
+                        final phone = _phoneController.text.trim();
+
+                        // Email validation
+                        if (email.isEmpty || password.isEmpty || confirmPassword.isEmpty || name.isEmpty || phone.isEmpty) {
                           ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(content: Text("Passwords do not match")),
+                            const SnackBar(content: Text('All fields must be filled.')),
                           );
+                          return;
                         }
+
+                        if (!EmailValidator.validate(email)) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(content: Text('Invalid email address.')),
+                          );
+                          return;
+                        }
+
+                        // Block emails that contain 'admin' or 'manager'
+                        if (email.contains('@admin') || email.contains('@manager')) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(content: Text('Email cannot contain @admin or @manager.')),
+                          );
+                          return;
+                        }
+
+                        // Password validation
+                        if (password.length < 6) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(content: Text('Password must be at least 6 characters.')),
+                          );
+                          return;
+                        }
+
+                        if (password != confirmPassword) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(content: Text('Passwords do not match.')),
+                          );
+                          return;
+                        }
+
+                        // Check if the phone number already exists
+                        final QuerySnapshot phoneCheck = await FirebaseFirestore.instance
+                            .collection('users')
+                            .where('phone', isEqualTo: phone)
+                            .get();
+
+                        if (phoneCheck.docs.isNotEmpty) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(content: Text('Phone number already in use.')),
+                          );
+                          return;
+                        }
+
+                        // Trigger sign-up event (Firebase will check for existing emails)
+                        BlocProvider.of<AuthBloc>(context).add(
+                          SignUpRequested(email, password, name, phone),
+                        );
                       },
                       backgroundColor: AppColors.primary,
                     ),

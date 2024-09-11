@@ -1,5 +1,5 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:intl/intl.dart';
 
 class AddClassScreen extends StatefulWidget {
@@ -10,7 +10,9 @@ class AddClassScreen extends StatefulWidget {
 class _AddClassScreenState extends State<AddClassScreen> {
   final TextEditingController classNameController = TextEditingController();
   final TextEditingController priceController = TextEditingController();
-  String selectedClassType = 'Private'; // Default class type
+  String? selectedClassType; // Selected class type (initially null)
+  List<String> selectedDates = []; // To store selected dates
+  Map<String, Map<String, dynamic>> availableTimes = {}; // To store hours and seat counts per date
 
   @override
   Widget build(BuildContext context) {
@@ -32,24 +34,71 @@ class _AddClassScreenState extends State<AddClassScreen> {
               decoration: const InputDecoration(labelText: 'Price'),
               keyboardType: TextInputType.number,
             ),
-            DropdownButton<String>(
-              value: selectedClassType,
-              onChanged: (newValue) {
-                setState(() {
-                  selectedClassType = newValue!;
-                });
-              },
-              items: <String>['Private', 'Adult', 'Kids', 'Hot Deals']
-                  .map<DropdownMenuItem<String>>((String value) {
-                return DropdownMenuItem<String>(
-                  value: value,
-                  child: Text(value),
+            StreamBuilder<QuerySnapshot>(
+              stream: FirebaseFirestore.instance.collection('classTypes').snapshots(),
+              builder: (context, snapshot) {
+                if (!snapshot.hasData) {
+                  return const CircularProgressIndicator();
+                }
+                List<DropdownMenuItem<String>> classTypeItems = snapshot.data!.docs.map((doc) {
+                  return DropdownMenuItem<String>(
+                    value: doc['name'],
+                    child: Text(doc['name']),
+                  );
+                }).toList();
+
+                return DropdownButton<String>(
+                  value: selectedClassType,
+                  onChanged: (newValue) {
+                    setState(() {
+                      selectedClassType = newValue!;
+                    });
+                  },
+                  hint: const Text("Select Class Type"),
+                  items: classTypeItems,
                 );
-              }).toList(),
+              },
             ),
+            const SizedBox(height: 16),
+            ElevatedButton(
+              onPressed: () async {
+                _pickDate();
+              },
+              child: const Text("Select Active Dates"),
+            ),
+            const SizedBox(height: 16),
+            selectedDates.isNotEmpty
+                ? Column(
+                    children: selectedDates.map((date) {
+                      return Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text("Date: $date"),
+                          ElevatedButton(
+                            onPressed: () {
+                              _pickTimeForDate(date);
+                            },
+                            child: const Text("Add Available Hours and Seats"),
+                          ),
+                          if (availableTimes[date] != null) ...[
+                            const Text(
+                              "Available Hours and Seats:",
+                              style: TextStyle(fontSize: 14, color: Colors.green),
+                            ),
+                            ...availableTimes[date]!.entries.map((entry) {
+                              return Text("Hour: ${entry.key}, Seats: ${entry.value}");
+                            }).toList(),
+                          ],
+                        ],
+                      );
+                    }).toList(),
+                  )
+                : const Text("No dates selected"),
             const SizedBox(height: 20),
             ElevatedButton(
-              onPressed: _addClass,
+              onPressed: () async {
+                _addClassToFirestore();
+              },
               child: const Text('Add Class'),
             ),
           ],
@@ -58,14 +107,79 @@ class _AddClassScreenState extends State<AddClassScreen> {
     );
   }
 
-  Future<void> _addClass() async {
-    if (classNameController.text.isNotEmpty && priceController.text.isNotEmpty) {
-      // Create a map of data for Firestore
+  Future<void> _pickDate() async {
+    final DateTime? pickedDate = await showDatePicker(
+      context: context,
+      initialDate: DateTime.now(),
+      firstDate: DateTime.now(),
+      lastDate: DateTime(DateTime.now().year + 1),
+    );
+
+    if (pickedDate != null) {
+      setState(() {
+        String formattedDate = DateFormat('yyyy-MM-dd').format(pickedDate);
+        if (!selectedDates.contains(formattedDate)) {
+          selectedDates.add(formattedDate); // Add the selected date if not already added
+        }
+      });
+    }
+  }
+
+  Future<void> _pickTimeForDate(String date) async {
+    final TimeOfDay? pickedTime = await showTimePicker(
+      context: context,
+      initialTime: const TimeOfDay(hour: 9, minute: 0),
+    );
+
+    if (pickedTime != null) {
+      final seatsController = TextEditingController();
+      showDialog(
+        context: context,
+        builder: (context) {
+          return AlertDialog(
+            title: Text("Set available seats for ${pickedTime.format(context)}"),
+            content: TextField(
+              controller: seatsController,
+              keyboardType: TextInputType.number,
+              decoration: const InputDecoration(labelText: 'Number of seats'),
+            ),
+            actions: [
+              TextButton(
+                onPressed: () {
+                  final formattedTime = pickedTime.format(context);
+                  final seats = int.tryParse(seatsController.text);
+
+                  if (seats != null) {
+                    setState(() {
+                      if (availableTimes[date] == null) {
+                        availableTimes[date] = {};
+                      }
+                      availableTimes[date]![formattedTime] = seats;
+                    });
+                  }
+
+                  Navigator.pop(context);
+                },
+                child: const Text('OK'),
+              ),
+            ],
+          );
+        },
+      );
+    }
+  }
+
+  Future<void> _addClassToFirestore() async {
+    if (classNameController.text.isNotEmpty &&
+        priceController.text.isNotEmpty &&
+        selectedClassType != null &&
+        selectedDates.isNotEmpty &&
+        availableTimes.isNotEmpty) {
       final classData = {
         'name': classNameController.text,
         'price': int.parse(priceController.text),
         'type': selectedClassType,
-        'available_times': _generateAvailableTimes(),
+        'available_times': availableTimes, // Store selected dates, hours, and seat counts
       };
 
       try {
@@ -74,9 +188,13 @@ class _AddClassScreenState extends State<AddClassScreen> {
           const SnackBar(content: Text('Class added successfully')),
         );
 
-        // Clear the fields after saving
+        // Clear inputs after saving
         classNameController.clear();
         priceController.clear();
+        setState(() {
+          selectedDates.clear();
+          availableTimes.clear();
+        });
       } catch (e) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('Failed to add class: $e')),
@@ -87,30 +205,5 @@ class _AddClassScreenState extends State<AddClassScreen> {
         const SnackBar(content: Text('Please fill all fields')),
       );
     }
-  }
-
-  // Generate available seats for each hour of the day (9 AM - 6 PM)
-  Map<String, Map<String, int>> _generateAvailableTimes() {
-    final Map<String, Map<String, int>> availableTimes = {};
-    final DateTime today = DateTime.now();
-
-    // Create availability for the next 7 days
-    for (int i = 0; i < 7; i++) {
-      String dateKey = DateFormat('yyyy-MM-dd').format(today.add(Duration(days: i)));
-      availableTimes[dateKey] = {
-        "9:00 AM": 10,
-        "10:00 AM": 10,
-        "11:00 AM": 10,
-        "12:00 PM": 10,
-        "1:00 PM": 10,
-        "2:00 PM": 10,
-        "3:00 PM": 10,
-        "4:00 PM": 10,
-        "5:00 PM": 10,
-        "6:00 PM": 10,
-      };
-    }
-
-    return availableTimes;
   }
 }

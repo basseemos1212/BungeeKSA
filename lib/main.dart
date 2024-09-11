@@ -1,5 +1,7 @@
 import 'package:bungee_ksa/firebase_options.dart';
+import 'package:bungee_ksa/ui/login_screen.dart';
 import 'package:bungee_ksa/ui/widgets/add_class_form.dart';
+import 'package:bungee_ksa/ui/widgets/add_class_type_form.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -56,7 +58,9 @@ class MyApp extends StatelessWidget {
           '/': (context) => SplashScreen(),
           '/onboarding': (context) => OnboardingScreen(),
           '/home': (context) => HomeScreen(),
+          '/login':(context)=>LoginScreen(),
           '/add-class': (context) => AddClassScreen(), // AddClassScreen route
+          '/add-class-type': (context) => AddClassTypeScreen(),
           // Add more routes as needed
         },
       ),
