@@ -13,6 +13,7 @@ import 'ui/splash.dart';
 import 'ui/onboarding/onboarding_screen.dart';
 import 'ui/home/home_screen.dart';
 
+
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp(

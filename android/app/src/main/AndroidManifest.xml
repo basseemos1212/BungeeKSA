@@ -1,10 +1,10 @@
-<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+<manifest xmlns:android="http://schemas.android.com/apk/res/android" package="com.bungee.bungeeksa">
     <application
-        android:label="bungee_ksa"
+        android:label="Bungee KSA"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher">
         <activity
-            android:name=".MainActivity"
+            android:name="com.bungee.bungeeksa.MainActivity"
             android:exported="true"
             android:launchMode="singleTop"
             android:taskAffinity=""

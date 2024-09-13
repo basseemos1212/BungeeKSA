@@ -74,7 +74,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
   // Function to inject user data into each page
   Widget _injectUserData(Widget page, dynamic userData) {
-    print(userData);
+
     if (page is HomePage) {
       return HomePage();
     } else if (page is BookingPage) {

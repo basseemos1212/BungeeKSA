@@ -39,19 +39,16 @@ class _ClassDetailsDialogState extends State<ClassDetailsDialog> {
     if (doc.exists) {
       setState(() {
         final dynamicData = doc['available_times'];
-        // Get the current date
         final now = DateTime.now();
         availableTimes = (dynamicData as Map<String, dynamic>).map((day, hours) {
           DateTime parsedDay = DateFormat('yyyy-MM-dd').parse(day);
-          // Include today and future dates only
           if (parsedDay.isAfter(now) || DateFormat('yyyy-MM-dd').format(parsedDay) == DateFormat('yyyy-MM-dd').format(now)) {
             return MapEntry(day, (hours as Map<String, dynamic>).map((hour, seats) {
               return MapEntry(hour, seats as int);
             }));
           }
-          return MapEntry("", {}); // Empty entry for past dates
+          return MapEntry("", {});
         });
-        // Remove invalid entries (past dates)
         availableTimes.removeWhere((key, value) => key.isEmpty);
       });
     }
@@ -83,10 +80,9 @@ class _ClassDetailsDialogState extends State<ClassDetailsDialog> {
         TextButton(
           onPressed: _selectedHour != null
               ? () {
-                  _bookClass();
-                  Navigator.of(context).pop();
-                }
-              : null, // Disable if no day or hour is selected
+            _bookClass();
+          }
+              : null,
           child: const Text('Book'),
         ),
       ],
@@ -109,7 +105,7 @@ class _ClassDetailsDialogState extends State<ClassDetailsDialog> {
               onSelected: (selected) {
                 setState(() {
                   _selectedDay = selected ? day : null;
-                  _selectedHour = null; // Reset hour selection
+                  _selectedHour = null;
                 });
               },
               selectedColor: AppColors.secondary,
@@ -124,18 +120,14 @@ class _ClassDetailsDialogState extends State<ClassDetailsDialog> {
     final availableHours = availableTimes[_selectedDay]!.keys.toList();
     final now = DateTime.now();
 
-    // Parse the selected day to compare with the current date
     final DateTime selectedDayDate = DateFormat('yyyy-MM-dd').parse(_selectedDay!);
-    
-    // Only filter hours for today; future days show all hours
     final filteredAvailableHours = availableHours.where((hour) {
       if (DateFormat('yyyy-MM-dd').format(selectedDayDate) == DateFormat('yyyy-MM-dd').format(now)) {
-        // Parse the hour to DateTime and compare with the current time
         DateTime parsedHour = DateFormat('h:mm a').parse(hour);
         DateTime todayHour = DateTime(now.year, now.month, now.day, parsedHour.hour, parsedHour.minute);
         return todayHour.isAfter(now);
       }
-      return true; // Keep all hours for future days
+      return true;
     }).toList();
 
     return Column(
@@ -177,37 +169,60 @@ class _ClassDetailsDialogState extends State<ClassDetailsDialog> {
           final userId = FirebaseAuth.instance.currentUser?.uid;
 
           if (userId != null) {
-            final bookingData = {
-              'userId': userId,
-              'className': widget.className,
-              'classType': widget.classType,
-              'date': selectedDayString,
-              'hour': _selectedHour,
-              'price': widget.price,
-            };
+            // Check if the user already has a booking for this class, date, and hour
+            final existingBooking = await _firestore
+                .collection('bookings')
+                .where('userId', isEqualTo: userId)
+                .where('classDocId', isEqualTo: widget.classDocId)
+                .where('date', isEqualTo: selectedDayString)
+                .where('hour', isEqualTo: _selectedHour)
+                .get();
 
-            await _firestore.collection('bookings').add(bookingData);
+            if (existingBooking.docs.isEmpty) {
+              final bookingData = {
+                'userId': userId,
+                'className': widget.className,
+                'classType': widget.classType,
+                'date': selectedDayString,
+                'hour': _selectedHour,
+                'price': widget.price,
+                'classDocId': widget.classDocId,
+                'attend': false, // Add attendance tracking, initially set to false
+              };
 
-            availableTimes[selectedDayString]![_selectedHour!] = currentSeats - 1;
+              // Save the booking
+              await _firestore.collection('bookings').add(bookingData);
 
-            await _firestore.collection('classes').doc(widget.classDocId).update({
-              'available_times': availableTimes,
-            });
+              // Decrease available seats for the booked time
+              availableTimes[selectedDayString]![_selectedHour!] = currentSeats - 1;
 
-            if (mounted) {
-              setState(() {});
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(content: Text('Booking successful!')),
-              );
+              // Update class document with reduced available seats
+              await _firestore.collection('classes').doc(widget.classDocId).update({
+                'available_times': availableTimes,
+              });
+
+              if (mounted) {
+                setState(() {});
+                Navigator.of(context).pop();
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('Booking successful!')),
+                );
+              }
+            } else {
+              if (mounted) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('You have already booked this class at the selected time.')),
+                );
+              }
             }
           } else {
             ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(content: Text('User not logged in!')),
+              const SnackBar(content: Text('User not logged in!')),
             );
           }
         } else {
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('No available seats for the selected time.')),
+            const SnackBar(content: Text('No available seats for the selected time.')),
           );
         }
       }

@@ -1,6 +1,8 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'dart:math'; // For random selection
+
 import 'package:bungee_ksa/ui/widgets/classes_detail_dialog.dart';
 
 class HomePage extends StatefulWidget {
@@ -12,6 +14,14 @@ class _HomePageState extends State<HomePage> {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   final FirebaseAuth _auth = FirebaseAuth.instance;
   late ScaffoldMessengerState _scaffoldMessenger;
+
+  // List of background images
+  final List<String> backgroundImages = [
+    'assets/images/1.jpeg',
+    'assets/images/2.jpg',
+    'assets/images/3.jpeg',
+    'assets/images/4.jpg',
+  ];
 
   @override
   void didChangeDependencies() {
@@ -28,15 +38,16 @@ class _HomePageState extends State<HomePage> {
       appBar: AppBar(
         title: const Text('Bungee Classes'),
         actions: [
-          if (userEmail != null && (userEmail.contains('@admin') || userEmail.contains('@manager')))
+          if (userEmail != null &&
+              (userEmail.contains('@admin') || userEmail.contains('@manager')))
             IconButton(
               icon: const Icon(Icons.add),
-              onPressed: () => Navigator.pushNamed(context, '/add-class'), // Navigate to AddClassScreen
+              onPressed: () => Navigator.pushNamed(context, '/add-class'),
             ),
           if (userEmail != null && userEmail.contains('@admin'))
             IconButton(
               icon: const Icon(Icons.category),
-              onPressed: () => Navigator.pushNamed(context, '/add-class-type'), // Navigate to AddClassTypeScreen
+              onPressed: () => Navigator.pushNamed(context, '/add-class-type'),
             ),
         ],
       ),
@@ -71,11 +82,8 @@ class _HomePageState extends State<HomePage> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   _buildSectionTitle(context, classType, classTypeDoc.id, userEmail),
-                  const SizedBox(height: 0),
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 15),
-                    child: _buildCarouselWithType(context, classType, userEmail),
-                  ),
+                  const SizedBox(height: 16),
+                  _buildCarouselWithType(context, classType, userEmail),
                 ],
               );
             },
@@ -85,7 +93,6 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
-  // Widget to build the section title with the option to delete the class type (for admins)
   Widget _buildSectionTitle(BuildContext context, String classType, String classTypeId, String? userEmail) {
     return Row(
       children: [
@@ -95,9 +102,12 @@ class _HomePageState extends State<HomePage> {
             height: 130,
           )
         else // Otherwise, show the class type name
-          Text(
-            classType,
-            style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+          Padding(
+            padding: const EdgeInsets.symmetric(vertical: 8.0),
+            child: Text(
+              classType,
+              style: const TextStyle(fontSize: 22, fontWeight: FontWeight.w600),
+            ),
           ),
         if (userEmail != null && userEmail.contains('@admin')) // Add delete button for admins
           IconButton(
@@ -108,7 +118,6 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
-  // Function to build the list of classes based on the class type
   Widget _buildCarouselWithType(BuildContext context, String classType, String? userEmail) {
     return StreamBuilder<QuerySnapshot>(
       stream: _firestore.collection('classes').where('type', isEqualTo: classType).snapshots(),
@@ -124,7 +133,7 @@ class _HomePageState extends State<HomePage> {
         final classes = snapshot.data!.docs;
 
         return SizedBox(
-          height: 200,
+          height: 220,
           child: ListView.builder(
             scrollDirection: Axis.horizontal,
             itemCount: classes.length,
@@ -141,49 +150,76 @@ class _HomePageState extends State<HomePage> {
     final String className = classDoc['name'];
     final int price = classDoc['price'];
 
+    // Select a random background image from the list
+    final String randomBackgroundImage = backgroundImages[Random().nextInt(backgroundImages.length)];
+
     return GestureDetector(
       onTap: () => _showClassDetailsDialog(context, classDoc),
-      child: Container(
-        width: 150,
-        margin: const EdgeInsets.symmetric(horizontal: 8.0),
-        decoration: _boxDecoration(),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
+      child: Card(
+        elevation: 4,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        margin: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 10.0),
+        clipBehavior: Clip.antiAlias,
+        child: Stack(
           children: [
-            Text(
-              className,  // Always show the class name
-              style: Theme.of(context).textTheme.headlineSmall,
-              textAlign: TextAlign.center,
-            ),
-            const SizedBox(height: 4),
-            Text(
-              'Price: $price SAR',
-              style: const TextStyle(fontSize: 12, color: Colors.grey),
-              textAlign: TextAlign.center,
-            ),
-            if (userEmail != null && userEmail.contains('@admin')) ...[
-              IconButton(
-                icon: const Icon(Icons.delete, color: Colors.red),
-                onPressed: () => _deleteClass(classDoc.id),
+            // Background Image
+            Container(
+              width: 160,
+              height: 220,
+              decoration: BoxDecoration(
+                image: DecorationImage(
+                  image: AssetImage(randomBackgroundImage),
+                  fit: BoxFit.cover,
+                ),
               ),
-            ],
+            ),
+            // Gradient Overlay
+            Container(
+              width: 160,
+              height: 220,
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  colors: [
+                    Colors.black.withOpacity(0.7),
+                    Colors.transparent,
+                  ],
+                  begin: Alignment.bottomCenter,
+                  end: Alignment.topCenter,
+                ),
+              ),
+            ),
+            // Class Details
+            Positioned(
+              bottom: 16,
+              left: 16,
+              right: 16,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    className,
+                    style: const TextStyle(
+                      fontSize: 18,
+                      color: Colors.white,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    'Price: $price SAR',
+                    style: const TextStyle(fontSize: 14, color: Colors.white70),
+                  ),
+                  if (userEmail != null && userEmail.contains('@admin'))
+                    IconButton(
+                      icon: const Icon(Icons.delete, color: Colors.red),
+                      onPressed: () => _deleteClass(classDoc.id),
+                    ),
+                ],
+              ),
+            ),
           ],
         ),
       ),
-    );
-  }
-
-  BoxDecoration _boxDecoration() {
-    return BoxDecoration(
-      color: Colors.grey.shade200,
-      borderRadius: BorderRadius.circular(12),
-      boxShadow: const [
-        BoxShadow(
-          color: Colors.black12,
-          blurRadius: 6,
-          offset: Offset(0, 3),
-        ),
-      ],
     );
   }
 
@@ -204,40 +240,79 @@ class _HomePageState extends State<HomePage> {
       },
     );
   }
-
-  // Function to delete a class and show a confirmation message
   Future<void> _deleteClass(String classDocId) async {
     try {
+      // First, delete all bookings associated with this class
+      final bookingsQuerySnapshot = await _firestore
+          .collection('bookings')
+          .where('classDocId', isEqualTo: classDocId)
+          .get();
+
+      for (var bookingDoc in bookingsQuerySnapshot.docs) {
+        await _firestore.collection('bookings').doc(bookingDoc.id).delete();
+      }
+
+      // Then delete the class itself
       await _firestore.collection('classes').doc(classDocId).delete();
+
       _scaffoldMessenger.showSnackBar(
-        const SnackBar(content: Text('Class deleted successfully')),
+        const SnackBar(content: Text('Class and related bookings deleted successfully')),
       );
     } catch (e) {
       _scaffoldMessenger.showSnackBar(
-        SnackBar(content: Text('Failed to delete class: $e')),
+        SnackBar(content: Text('Failed to delete class and bookings: $e')),
       );
     }
   }
 
-  // Function to delete a class type and all associated classes
   Future<void> _deleteClassTypeWithClasses(BuildContext context, String classTypeId) async {
     try {
-      // First, delete all classes associated with this class type
-      final classesQuerySnapshot = await _firestore.collection('classes').where('typeId', isEqualTo: classTypeId).get();
+      // Step 1: Fetch the classTypeName based on the classTypeId
+      DocumentSnapshot classTypeDoc = await _firestore.collection('classTypes').doc(classTypeId).get();
+      if (!classTypeDoc.exists) {
+        _scaffoldMessenger.showSnackBar(
+          const SnackBar(content: Text('Class type not found')),
+        );
+        return;
+      }
+
+      String classTypeName = classTypeDoc['name']; // Get the classTypeName
+
+      // Step 2: Delete all classes associated with the classTypeName
+      final classesQuerySnapshot = await _firestore
+          .collection('classes')
+          .where('type', isEqualTo: classTypeName) // Query using the classTypeName
+          .get();
+
       for (var classDoc in classesQuerySnapshot.docs) {
+        // Delete the class itself
         await _firestore.collection('classes').doc(classDoc.id).delete();
       }
 
-      // Then delete the class type itself
+      // Step 3: Delete all bookings associated with the classTypeName
+      final bookingsQuerySnapshot = await _firestore
+          .collection('bookings')
+          .where('classType', isEqualTo: classTypeName) // Query using the classTypeName
+          .get();
+
+      for (var bookingDoc in bookingsQuerySnapshot.docs) {
+        // Delete the booking itself
+        await _firestore.collection('bookings').doc(bookingDoc.id).delete();
+      }
+
+      // Step 4: Finally, delete the class type document itself
       await _firestore.collection('classTypes').doc(classTypeId).delete();
-      
+
       _scaffoldMessenger.showSnackBar(
-        const SnackBar(content: Text('Class type and associated classes deleted successfully')),
+        const SnackBar(content: Text('Class type, related classes, and bookings deleted successfully')),
       );
     } catch (e) {
       _scaffoldMessenger.showSnackBar(
-        SnackBar(content: Text('Failed to delete class type: $e')),
+        SnackBar(content: Text('Failed to delete class type, classes, and bookings: $e')),
       );
     }
   }
+
+
+
 }

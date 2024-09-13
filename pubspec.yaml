@@ -46,6 +46,7 @@ dependencies:
   cloud_firestore: ^5.4.0
   barcode_widget: ^2.0.4
   email_validator: ^3.0.0
+  bloc: ^8.1.4
 
 dev_dependencies:
   flutter_test:
@@ -79,7 +80,11 @@ flutter:
     - assets/images/step4.png   
     - assets/images/trainer.png
     - assets/images/barcode.png 
-    - assets/images/limited_offer.png   
+    - assets/images/limited_offer.png
+    - assets/images/1.jpeg
+    - assets/images/3.jpeg
+    - assets/images/2.jpg
+    - assets/images/4.jpg
   
 
   # An image asset can refer to one or more resolution-specific "variants", see

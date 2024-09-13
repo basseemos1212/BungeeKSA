@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart'; // For formatting dates
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'dart:math'; // For random background
 
 class BookingPage extends StatefulWidget {
   @override
@@ -7,197 +10,305 @@ class BookingPage extends StatefulWidget {
 }
 
 class _BookingPageState extends State<BookingPage> {
-  DateTime today = DateTime.now();
-  DateTime? _selectedDay;
+  final TextEditingController _searchController = TextEditingController();
+  String _searchText = "";
+  final List<String> backgroundImages = [
+    'assets/images/1.jpeg',
+    'assets/images/2.jpg',
+    'assets/images/3.jpeg',
+    'assets/images/4.jpg',
+  ];
+  bool isAdmin = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _checkIfAdmin();
+    _searchController.addListener(() {
+      setState(() {
+        _searchText = _searchController.text;
+      });
+    });
+  }
+
+  Future<void> _checkIfAdmin() async {
+    final user = FirebaseAuth.instance.currentUser;
+    final userEmail = user?.email;
+    if (userEmail != null && userEmail.contains('@admin')) {
+      setState(() {
+        isAdmin = true;
+      });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
-    List<DateTime> nextSevenDays = List.generate(7, (index) => today.add(Duration(days: index)));
-
     return Scaffold(
-      body: ListView(
-        padding: const EdgeInsets.all(16.0),
+      appBar: AppBar(
+        title: isAdmin ? const Text('Users') : const Text('My Bookings'),
+      ),
+      body: Column(
         children: [
-          _buildFilter(nextSevenDays),
-          const SizedBox(height: 16),
-          _buildSectionTitle("Upcoming 7 Days"),
-          const SizedBox(height: 16),
-          _selectedDay == null
-              ? _buildUpcomingSevenDays(context, nextSevenDays)
-              : _buildCalendarWithWorkouts(context, _selectedDay!),
-        ],
-      ),
-    );
-  }
-
-  // Build the filter dropdown to select a specific day
-  Widget _buildFilter(List<DateTime> nextSevenDays) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: [
-        const Text(
-          'Filter by Day:',
-          style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-        ),
-        DropdownButton<DateTime>(
-          value: _selectedDay,
-          hint: const Text('Select a Day'),
-          onChanged: (DateTime? newDay) {
-            setState(() {
-              _selectedDay = newDay;
-            });
-          },
-          items: nextSevenDays.map((DateTime day) {
-            return DropdownMenuItem<DateTime>(
-              value: day,
-              child: Text(DateFormat('EEEE, MMM d').format(day)),
-            );
-          }).toList(),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildSectionTitle(String title) {
-    return Text(
-      title,
-      style: const TextStyle(
-        fontSize: 20,
-        fontWeight: FontWeight.bold,
-      ),
-    );
-  }
-
-  // Build the 7-day calendar with available workouts if no filter is selected
-  Widget _buildUpcomingSevenDays(BuildContext context, List<DateTime> nextSevenDays) {
-    return Column(
-      children: nextSevenDays.map((day) {
-        return Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              DateFormat('EEEE, MMM d').format(day),
-              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-            ),
-            const SizedBox(height: 8),
-            _buildWorkoutCard(
-              context,
-              day: day,
-              classType: "Adult Class",
-              availableSeats: 5,
-              totalSeats: 10,
-              trainerImage: 'assets/images/trainer.png',
-              trainerName: "Hanan Mohamed",
-            ),
-            const SizedBox(height: 16),
-            _buildWorkoutCard(
-              context,
-              day: day,
-              classType: "Kids Class",
-              availableSeats: 0, // Fully booked example
-              totalSeats: 10,
-              trainerImage: 'assets/images/trainer.png',
-              trainerName: "Esraa Ali",
-            ),
-            const Divider(),
-          ],
-        );
-      }).toList(),
-    );
-  }
-
-  // Build the 7-day calendar with available workouts
-  Widget _buildCalendarWithWorkouts(BuildContext context, DateTime selectedDay) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          DateFormat('EEEE, MMM d').format(selectedDay),
-          style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-        ),
-        const SizedBox(height: 8),
-        _buildWorkoutCard(
-          context,
-          day: selectedDay,
-          classType: "Adult Class",
-          availableSeats: 5,
-          totalSeats: 10,
-          trainerImage: 'assets/images/trainer.png',
-          trainerName: "Hanan Mohamed",
-        ),
-        const SizedBox(height: 16),
-        _buildWorkoutCard(
-          context,
-          day: selectedDay,
-          classType: "Kids Class",
-          availableSeats: 4,
-          totalSeats: 11,
-          trainerImage: 'assets/images/trainer.png',
-          trainerName: "Esraa Ali",
-        ),
-        const Divider(),
-      ],
-    );
-  }
-
-  // Build individual workout card for a specific day
-  Widget _buildWorkoutCard(
-    BuildContext context, {
-    required DateTime day,
-    required String classType,
-    required int availableSeats,
-    required int totalSeats,
-    required String trainerImage,
-    required String trainerName,
-  }) {
-    return Container(
-      padding: const EdgeInsets.all(8.0),
-      decoration: BoxDecoration(
-        color: Colors.grey.shade100,
-        borderRadius: BorderRadius.circular(12),
-        boxShadow: const [
-          BoxShadow(
-            color: Colors.black12,
-            blurRadius: 4,
-            offset: Offset(0, 2),
-          ),
-        ],
-      ),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.center,
-        children: [
-          // Trainer's Image
-          CircleAvatar(
-            radius: 30,
-            backgroundImage: AssetImage(trainerImage),
-          ),
-          const SizedBox(width: 16),
+          _buildSearchField(),
           Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  classType,
-                  style: Theme.of(context).textTheme.headlineMedium,
-                ),
-                const SizedBox(height: 8),
-                Text(
-                  "Trainer: $trainerName",
-                  style: const TextStyle(fontSize: 14, color: Colors.grey),
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  "$availableSeats/$totalSeats seats available",
-                  style: TextStyle(
-                    fontSize: 14,
-                    color: availableSeats == 0 ? Colors.red : Colors.blue, // Red color for full classes
+            child: isAdmin ? _buildUserList() : _buildBookingList(),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // Build the search field
+  Widget _buildSearchField() {
+    return Padding(
+      padding: const EdgeInsets.all(16.0),
+      child: TextField(
+        controller: _searchController,
+        decoration: InputDecoration(
+          hintText: isAdmin ? 'Search users by email...' : 'Search by class name...',
+          prefixIcon: const Icon(Icons.search),
+          border: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
+        ),
+      ),
+    );
+  }
+
+  // Build the booking list for the current user
+  Widget _buildBookingList() {
+    return StreamBuilder<QuerySnapshot>(
+      stream: _getUserBookingsStream(),
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return const Center(child: CircularProgressIndicator());
+        }
+
+        if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
+          return _buildNoBookingsCard();
+        }
+
+        final bookings = snapshot.data!.docs.where((booking) {
+          final className = booking['className'].toString().toLowerCase();
+          return className.contains(_searchText.toLowerCase());
+        }).toList();
+
+        bookings.sort((a, b) {
+          DateTime dateA = DateFormat('yyyy-MM-dd').parse(a['date']);
+          DateTime dateB = DateFormat('yyyy-MM-dd').parse(b['date']);
+          return dateB.compareTo(dateA); // Newest first
+        });
+
+        return ListView(
+          padding: const EdgeInsets.all(16.0),
+          children: bookings.map((booking) {
+            DateTime bookingDate = DateFormat('yyyy-MM-dd').parse(booking['date']);
+            return _buildBookingCard(context, booking, bookingDate);
+          }).toList(),
+        );
+      },
+    );
+  }
+
+  // Build the user list for admin
+  Widget _buildUserList() {
+    return StreamBuilder<QuerySnapshot>(
+      stream: FirebaseFirestore.instance.collection('users').snapshots(),
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return const Center(child: CircularProgressIndicator());
+        }
+
+        if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
+          return const Center(child: Text('No users available.'));
+        }
+
+        final users = snapshot.data!.docs;
+
+        return ListView(
+          padding: const EdgeInsets.all(16.0),
+          children: users.where((user) {
+            final email = user['email'].toString().toLowerCase();
+            return email.contains(_searchText.toLowerCase());
+          }).map((user) {
+            return _buildUserTile(context, user);
+          }).toList(),
+        );
+      },
+    );
+  }
+
+  // Build individual user tile with expandable bookings
+  Widget _buildUserTile(BuildContext context, DocumentSnapshot userDoc) {
+    final userId = userDoc.id;
+    final userEmail = userDoc['email'];
+
+    return ExpansionTile(
+      title: Text(userEmail),
+      children: [
+        StreamBuilder<QuerySnapshot>(
+          stream: FirebaseFirestore.instance
+              .collection('bookings')
+              .where('userId', isEqualTo: userId)
+              .snapshots(),
+          builder: (context, snapshot) {
+            if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
+              return const ListTile(
+                title: Text('No bookings available.'),
+              );
+            }
+
+            final bookings = snapshot.data!.docs;
+            return Column(
+              children: bookings.map((booking) {
+                DateTime bookingDate = DateFormat('yyyy-MM-dd').parse(booking['date']);
+                return _buildBookingCard(context, booking, bookingDate);
+              }).toList(),
+            );
+          },
+        ),
+      ],
+    );
+  }
+
+  // Stream for fetching real-time booking updates for the current user
+  Stream<QuerySnapshot> _getUserBookingsStream() {
+    final userId = FirebaseAuth.instance.currentUser?.uid;
+    return FirebaseFirestore.instance
+        .collection('bookings')
+        .where('userId', isEqualTo: userId)
+        .snapshots();
+  }
+
+  // Build individual booking card
+  Widget _buildBookingCard(BuildContext context, DocumentSnapshot booking, DateTime day) {
+    bool hasAttended = booking['attend'];
+    DateTime now = DateTime.now();
+
+    bool isLate = !hasAttended &&
+        now.isAfter(
+          DateFormat('yyyy-MM-dd h:mm a').parse('${booking['date']} ${booking['hour']}'),
+        );
+
+    final String randomBackgroundImage = backgroundImages[Random().nextInt(backgroundImages.length)];
+
+    return StreamBuilder<DocumentSnapshot>(
+      stream: _getClassStream(booking['classDocId']),
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return const Center(child: CircularProgressIndicator());
+        }
+
+        if (!snapshot.hasData || !snapshot.data!.exists) {
+          return _buildNoBookingsCard();
+        }
+
+        final classData = snapshot.data!;
+        final availableSeats = classData['available_times'][booking['date']][booking['hour']] as int;
+
+        return Card(
+          elevation: 4,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+          margin: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 10.0),
+          clipBehavior: Clip.antiAlias,
+          child: Stack(
+            children: [
+              // Background Image
+              Container(
+                width: double.infinity,
+                height: 180,
+                decoration: BoxDecoration(
+                  image: DecorationImage(
+                    image: AssetImage(randomBackgroundImage),
+                    fit: BoxFit.cover,
                   ),
                 ),
-              ],
-            ),
+              ),
+              // Gradient Overlay
+              Container(
+                width: double.infinity,
+                height: 180,
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: [Colors.black.withOpacity(0.7), Colors.transparent],
+                    begin: Alignment.bottomCenter,
+                    end: Alignment.topCenter,
+                  ),
+                ),
+              ),
+              // Booking Details
+              Positioned(
+                bottom: 16,
+                left: 16,
+                right: 16,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      booking['className'],
+                      style: const TextStyle(
+                        fontSize: 18,
+                        color: Colors.white,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      "Date: ${DateFormat('MMM d, yyyy').format(day)}",
+                      style: const TextStyle(fontSize: 14, color: Colors.white70),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      "Time: ${booking['hour']}",
+                      style: const TextStyle(fontSize: 14, color: Colors.white70),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      "Available Seats: $availableSeats",
+                      style: TextStyle(
+                        fontSize: 14,
+                        color: availableSeats == 0 ? Colors.red : Colors.blue,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    _buildStatusIcon(hasAttended, isLate),
+                  ],
+                ),
+              ),
+            ],
           ),
-        ],
+        );
+      },
+    );
+  }
+
+  // Stream to get real-time class data for seat availability
+  Stream<DocumentSnapshot> _getClassStream(String classDocId) {
+    return FirebaseFirestore.instance
+        .collection('classes')
+        .doc(classDocId)
+        .snapshots();
+  }
+
+  // Display message when no bookings exist
+  Widget _buildNoBookingsCard() {
+    return Padding(
+      padding: const EdgeInsets.all(8.0),
+      child: Text(
+        'No bookings available',
+        style: TextStyle(color: Colors.grey.shade600),
       ),
     );
+  }
+
+  // Build icons based on attendance or late status
+  Widget _buildStatusIcon(bool hasAttended, bool isLate) {
+    if (hasAttended) {
+      return const Icon(Icons.check_circle, color: Colors.green, size: 24);
+    } else if (isLate) {
+      return const Icon(Icons.error, color: Colors.red, size: 24);
+    } else {
+      return const Icon(Icons.schedule, color: Colors.blue, size: 24);
+    }
   }
 }
