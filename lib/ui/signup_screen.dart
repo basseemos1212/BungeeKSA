@@ -25,7 +25,7 @@ class SignUpScreen extends StatelessWidget {
       body: BlocConsumer<AuthBloc, AuthState>(
         listener: (context, state) {
           if (state is AuthSuccess) {
-            // Navigate to home screen if sign-up is successful
+            // Navigate to onboarding if sign-up is successful
             Navigator.pop(context);
             Navigator.pushReplacementNamed(context, '/onboarding');
           } else if (state is AuthFailure) {
@@ -107,49 +107,13 @@ class SignUpScreen extends StatelessWidget {
                     child: CustomButton(
                       text: "CREATE",
                       onPressed: () async {
+                        // Validate inputs
+                        if (!_validateInputs(context)) return;
+
                         final email = _emailController.text.trim();
                         final password = _passwordController.text.trim();
-                        final confirmPassword = _confirmPasswordController.text.trim();
                         final name = _nameController.text.trim();
                         final phone = _phoneController.text.trim();
-
-                        // Email validation
-                        if (email.isEmpty || password.isEmpty || confirmPassword.isEmpty || name.isEmpty || phone.isEmpty) {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(content: Text('All fields must be filled.')),
-                          );
-                          return;
-                        }
-
-                        if (!EmailValidator.validate(email)) {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(content: Text('Invalid email address.')),
-                          );
-                          return;
-                        }
-
-                        // Block emails that contain 'admin' or 'manager'
-                        if (email.contains('@admin') || email.contains('@manager')) {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(content: Text('Email cannot contain @admin or @manager.')),
-                          );
-                          return;
-                        }
-
-                        // Password validation
-                        if (password.length < 6) {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(content: Text('Password must be at least 6 characters.')),
-                          );
-                          return;
-                        }
-
-                        if (password != confirmPassword) {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(content: Text('Passwords do not match.')),
-                          );
-                          return;
-                        }
 
                         // Check if the phone number already exists
                         final QuerySnapshot phoneCheck = await FirebaseFirestore.instance
@@ -164,7 +128,7 @@ class SignUpScreen extends StatelessWidget {
                           return;
                         }
 
-                        // Trigger sign-up event (Firebase will check for existing emails)
+                        // Trigger sign-up event
                         BlocProvider.of<AuthBloc>(context).add(
                           SignUpRequested(email, password, name, phone),
                         );
@@ -203,5 +167,55 @@ class SignUpScreen extends StatelessWidget {
         },
       ),
     );
+  }
+
+  // Input validation
+  bool _validateInputs(BuildContext context) {
+    final email = _emailController.text.trim();
+    final password = _passwordController.text.trim();
+    final confirmPassword = _confirmPasswordController.text.trim();
+    final name = _nameController.text.trim();
+    final phone = _phoneController.text.trim();
+
+    // Basic validation
+    if (email.isEmpty || password.isEmpty || confirmPassword.isEmpty || name.isEmpty || phone.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('All fields must be filled.')),
+      );
+      return false;
+    }
+
+    // Email validation
+    if (!EmailValidator.validate(email)) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Invalid email address.')),
+      );
+      return false;
+    }
+
+    // Email restrictions
+    if (email.contains('@admin') || email.contains('@manager')) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Email cannot contain @admin or @manager.')),
+      );
+      return false;
+    }
+
+    // Password validation
+    if (password.length < 6) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Password must be at least 6 characters.')),
+      );
+      return false;
+    }
+
+    if (password != confirmPassword) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Passwords do not match.')),
+      );
+      return false;
+    }
+
+    return true;
   }
 }

@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-
 import '../../blocs/bloc/auth_bloc.dart';
 import '../../blocs/events/auth_event.dart';
 import '../../blocs/states/auth_state.dart';
@@ -11,31 +10,62 @@ import 'settings_page.dart';
 import '../widgets/app_bar.dart';
 import '../widgets/bottom_nav_bar.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class HomeScreen extends StatefulWidget {
+  const HomeScreen({super.key});
+
   @override
   _HomeScreenState createState() => _HomeScreenState();
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-  int _currentIndex = 0; // Track the selected index
-
-  // List of widgets representing each screen content
-  final List<Widget> _pages = [
-    HomePage(),
-    BookingPage(),
-    BarcodePage(),
-    SettingsPage(),
-  ];
+  int _currentIndex = 0;
+  ThemeMode _themeMode = ThemeMode.system;
 
   @override
   void initState() {
     super.initState();
-    // Fetch user data once the HomeScreen is initialized
-    String? uid = FirebaseAuth.instance.currentUser?.uid; // Get current user UID
+    _loadThemeMode(); // Load theme preference on startup
+    String? uid = FirebaseAuth.instance.currentUser?.uid;
     if (uid != null) {
-      context.read<AuthBloc>().add(FetchUserDataRequested(uid)); // Trigger event to fetch user data
+      context.read<AuthBloc>().add(FetchUserDataRequested(uid)); // Fetch user data
     }
+  }
+
+  // Load theme mode from shared preferences
+  Future<void> _loadThemeMode() async {
+    final prefs = await SharedPreferences.getInstance();
+    final theme = prefs.getString('themeMode') ?? 'system';
+    setState(() {
+      if (theme == 'dark') {
+        _themeMode = ThemeMode.dark;
+      } else if (theme == 'light') {
+        _themeMode = ThemeMode.light;
+      } else {
+        _themeMode = ThemeMode.system;
+      }
+    });
+  }
+
+  // Save theme mode to shared preferences
+  Future<void> _saveThemeMode(String theme) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString('themeMode', theme);
+  }
+
+  // Update theme mode based on user selection
+  void updateThemeMode(ThemeMode mode) {
+    setState(() {
+      _themeMode = mode;
+      if (mode == ThemeMode.dark) {
+        _saveThemeMode('dark');
+      } else if (mode == ThemeMode.light) {
+        _saveThemeMode('light');
+      } else {
+        _saveThemeMode('system');
+      }
+    });
   }
 
   @override
@@ -47,17 +77,20 @@ class _HomeScreenState extends State<HomeScreen> {
           if (state is AuthLoading) {
             return const Center(child: CircularProgressIndicator());
           } else if (state is UserDataSuccess) {
-            // Pass the user data to the child pages
+            final userData = state.user; // Assign the user data
             return IndexedStack(
               index: _currentIndex,
-              children: _pages.map((page) {
-                return _injectUserData(page, state.user); // Inject user data into pages
-              }).toList(),
+              children: [
+                HomePage(userData: userData), // Pass userData here
+                BookingPage(userData: userData), // Pass userData here
+                BarcodePage(userData: userData), // Pass userData here
+                SettingsPage(userData: userData), // Pass userData here
+              ],
             );
           } else if (state is UserDataFailure) {
             return Center(child: Text(state.error));
           } else {
-            return const Center(child: Text("Welcome to Bungee KSA! "));
+            return const Center(child: Text("Welcome to Bungee KSA!"));
           }
         },
       ),
@@ -71,19 +104,5 @@ class _HomeScreenState extends State<HomeScreen> {
       ),
     );
   }
-
-  // Function to inject user data into each page
-  Widget _injectUserData(Widget page, dynamic userData) {
-
-    if (page is HomePage) {
-      return HomePage();
-    } else if (page is BookingPage) {
-      return BookingPage();
-    } else if (page is BarcodePage) {
-      return BarcodePage();
-    } else if (page is SettingsPage) {
-      return SettingsPage();
-    }
-    return page;
-  }
 }
+

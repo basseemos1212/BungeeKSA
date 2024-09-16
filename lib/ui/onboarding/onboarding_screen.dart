@@ -3,6 +3,8 @@ import '../widgets/onboarding_content.dart';
 import 'onboarding_step.dart';
 
 class OnboardingScreen extends StatefulWidget {
+  const OnboardingScreen({super.key});
+
   @override
   _OnboardingScreenState createState() => _OnboardingScreenState();
 }
@@ -58,7 +60,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> with TickerProvider
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Theme.of(context).colorScheme.background, // Use theme background
+      backgroundColor: Theme.of(context).colorScheme.surface, // Use theme background
       body: Stack(
         children: [
           PageView.builder(

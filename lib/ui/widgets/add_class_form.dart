@@ -3,6 +3,8 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:intl/intl.dart';
 
 class AddClassScreen extends StatefulWidget {
+  const AddClassScreen({super.key});
+
   @override
   _AddClassScreenState createState() => _AddClassScreenState();
 }
@@ -87,7 +89,7 @@ class _AddClassScreenState extends State<AddClassScreen> {
                             ),
                             ...availableTimes[date]!.entries.map((entry) {
                               return Text("Hour: ${entry.key}, Seats: ${entry.value}");
-                            }).toList(),
+                            }),
                           ],
                         ],
                       );

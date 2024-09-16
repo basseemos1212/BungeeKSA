@@ -24,10 +24,10 @@ class LoginScreen extends StatelessWidget {
       body: BlocConsumer<AuthBloc, AuthState>(
         listener: (context, state) {
           if (state is AuthSuccess) {
-            // Navigate to onboarding if login successful
+            // Navigate to onboarding if login is successful
             Navigator.pushReplacement(
               context,
-              MaterialPageRoute(builder: (context) => OnboardingScreen()),
+              MaterialPageRoute(builder: (context) => const OnboardingScreen()),
             );
           } else if (state is AuthFailure) {
             // Show error message
@@ -123,15 +123,6 @@ class LoginScreen extends StatelessWidget {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      SocialButton(
-                        icon: Icons.facebook,
-                        text: "Facebook",
-                        backgroundColor: AppColors.facebookBlue,
-                        onPressed: () {
-                          // Facebook login logic
-                        },
-                      ),
-                      const SizedBox(width: 16),
                       SocialButton(
                         icon: Icons.g_translate,
                         text: "Google",

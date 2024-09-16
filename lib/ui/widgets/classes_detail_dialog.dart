@@ -11,12 +11,12 @@ class ClassDetailsDialog extends StatefulWidget {
   final String classDocId;
 
   const ClassDetailsDialog({
-    Key? key,
+    super.key,
     required this.className,
     required this.classType,
     required this.price,
     required this.classDocId,
-  }) : super(key: key);
+  });
 
   @override
   _ClassDetailsDialogState createState() => _ClassDetailsDialogState();
@@ -47,7 +47,7 @@ class _ClassDetailsDialogState extends State<ClassDetailsDialog> {
               return MapEntry(hour, seats as int);
             }));
           }
-          return MapEntry("", {});
+          return const MapEntry("", {});
         });
         availableTimes.removeWhere((key, value) => key.isEmpty);
       });
@@ -140,7 +140,7 @@ class _ClassDetailsDialogState extends State<ClassDetailsDialog> {
           children: filteredAvailableHours.map((hour) {
             int availableSeats = availableTimes[_selectedDay]![hour]!;
             return ChoiceChip(
-              label: Text("$hour (${availableSeats} seats left)"),
+              label: Text("$hour ($availableSeats seats left)"),
               selected: _selectedHour == hour,
               onSelected: (selected) {
                 if (availableSeats > 0) {

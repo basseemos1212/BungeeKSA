@@ -47,6 +47,12 @@ dependencies:
   barcode_widget: ^2.0.4
   email_validator: ^3.0.0
   bloc: ^8.1.4
+  barcode_scan2: ^4.3.3
+  flutter_facebook_auth: ^7.1.1
+  sign_in_with_apple: ^6.1.2
+  shared_preferences: ^2.3.2
+  firebase_storage: ^12.3.0
+  image_picker: ^1.1.2
 
 dev_dependencies:
   flutter_test:

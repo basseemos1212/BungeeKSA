@@ -6,7 +6,7 @@ class BarcodeScreen extends StatelessWidget {
   final int price;
   final String className;
 
-  BarcodeScreen({
+  const BarcodeScreen({super.key, 
     required this.customerName,
     required this.price,
     required this.className,

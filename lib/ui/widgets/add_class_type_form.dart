@@ -6,6 +6,8 @@ class AddClassTypeScreen extends StatelessWidget {
 
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
+  AddClassTypeScreen({super.key});
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(

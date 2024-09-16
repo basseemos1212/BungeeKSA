@@ -6,6 +6,10 @@ import 'dart:math'; // For random selection
 import 'package:bungee_ksa/ui/widgets/classes_detail_dialog.dart';
 
 class HomePage extends StatefulWidget {
+  final dynamic userData; // Pass user data to HomePage
+
+  const HomePage({super.key, required this.userData});
+
   @override
   _HomePageState createState() => _HomePageState();
 }
@@ -38,13 +42,14 @@ class _HomePageState extends State<HomePage> {
       appBar: AppBar(
         title: const Text('Bungee Classes'),
         actions: [
-          if (userEmail != null &&
-              (userEmail.contains('@admin') || userEmail.contains('@manager')))
+          // Show "Add Class" button for admins and managers
+          if (_isAdminOrManager(userEmail))
             IconButton(
               icon: const Icon(Icons.add),
               onPressed: () => Navigator.pushNamed(context, '/add-class'),
             ),
-          if (userEmail != null && userEmail.contains('@admin'))
+          // Show "Add Class Type" button for admins only
+          if (_isAdmin(userEmail))
             IconButton(
               icon: const Icon(Icons.category),
               onPressed: () => Navigator.pushNamed(context, '/add-class-type'),
@@ -64,12 +69,8 @@ class _HomePageState extends State<HomePage> {
 
           List<DocumentSnapshot> classTypes = snapshot.data!.docs;
 
-          // Reorder classTypes to ensure "Limited Offer" appears first
-          classTypes.sort((a, b) {
-            if (a['name'].toLowerCase() == "limited offer") return -1;
-            if (b['name'].toLowerCase() == "limited offer") return 1;
-            return 0;
-          });
+          // Ensure "Limited Offer" class type is first
+          classTypes.sort((a, b) => _sortLimitedOfferFirst(a, b));
 
           return ListView.builder(
             padding: const EdgeInsets.all(16.0),
@@ -93,10 +94,29 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
+  // Helper function to sort "Limited Offer" to appear first
+  int _sortLimitedOfferFirst(DocumentSnapshot a, DocumentSnapshot b) {
+    if (a['name'].toLowerCase() == "limited offer") return -1;
+    if (b['name'].toLowerCase() == "limited offer") return 1;
+    return 0;
+  }
+
+  // Helper function to check if the user is an admin
+  bool _isAdmin(String? email) {
+    return email != null && email.contains('@admin');
+  }
+
+  // Helper function to check if the user is either an admin or a manager
+  bool _isAdminOrManager(String? email) {
+    return email != null && (email.contains('@admin') || email.contains('@manager'));
+  }
+
+  // Build section title for each class type
   Widget _buildSectionTitle(BuildContext context, String classType, String classTypeId, String? userEmail) {
     return Row(
       children: [
-        if (classType.toLowerCase() == "limited offer") // If class type is "Limited Offer", show the image
+        // Show "Limited Offer" image if class type is "Limited Offer"
+        if (classType.toLowerCase() == "limited offer")
           Image.asset(
             'assets/images/limited_offer.png', // Path to the Limited Offer image
             height: 130,
@@ -109,7 +129,7 @@ class _HomePageState extends State<HomePage> {
               style: const TextStyle(fontSize: 22, fontWeight: FontWeight.w600),
             ),
           ),
-        if (userEmail != null && userEmail.contains('@admin')) // Add delete button for admins
+        if (_isAdmin(userEmail)) // Add delete button for admins
           IconButton(
             icon: const Icon(Icons.delete, color: Colors.red),
             onPressed: () => _deleteClassTypeWithClasses(context, classTypeId),
@@ -118,6 +138,7 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
+  // Build carousel for classes under each class type
   Widget _buildCarouselWithType(BuildContext context, String classType, String? userEmail) {
     return StreamBuilder<QuerySnapshot>(
       stream: _firestore.collection('classes').where('type', isEqualTo: classType).snapshots(),
@@ -146,11 +167,12 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
+  // Build a single class card for the carousel
   Widget _buildClassCard(BuildContext context, DocumentSnapshot classDoc, String? userEmail) {
     final String className = classDoc['name'];
     final int price = classDoc['price'];
 
-    // Select a random background image from the list
+    // Select a random background image
     final String randomBackgroundImage = backgroundImages[Random().nextInt(backgroundImages.length)];
 
     return GestureDetector(
@@ -209,7 +231,7 @@ class _HomePageState extends State<HomePage> {
                     'Price: $price SAR',
                     style: const TextStyle(fontSize: 14, color: Colors.white70),
                   ),
-                  if (userEmail != null && userEmail.contains('@admin'))
+                  if (_isAdmin(userEmail))
                     IconButton(
                       icon: const Icon(Icons.delete, color: Colors.red),
                       onPressed: () => _deleteClass(classDoc.id),
@@ -223,6 +245,7 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
+  // Show class details dialog
   void _showClassDetailsDialog(BuildContext context, DocumentSnapshot classDoc) {
     final String className = classDoc['name'];
     final int price = classDoc['price'];
@@ -240,6 +263,8 @@ class _HomePageState extends State<HomePage> {
       },
     );
   }
+
+  // Delete a class and its associated bookings
   Future<void> _deleteClass(String classDocId) async {
     try {
       // First, delete all bookings associated with this class
@@ -265,9 +290,9 @@ class _HomePageState extends State<HomePage> {
     }
   }
 
+  // Delete a class type, related classes, and bookings
   Future<void> _deleteClassTypeWithClasses(BuildContext context, String classTypeId) async {
     try {
-      // Step 1: Fetch the classTypeName based on the classTypeId
       DocumentSnapshot classTypeDoc = await _firestore.collection('classTypes').doc(classTypeId).get();
       if (!classTypeDoc.exists) {
         _scaffoldMessenger.showSnackBar(
@@ -276,31 +301,29 @@ class _HomePageState extends State<HomePage> {
         return;
       }
 
-      String classTypeName = classTypeDoc['name']; // Get the classTypeName
+      String classTypeName = classTypeDoc['name'];
 
-      // Step 2: Delete all classes associated with the classTypeName
+      // Delete all classes of this type
       final classesQuerySnapshot = await _firestore
           .collection('classes')
-          .where('type', isEqualTo: classTypeName) // Query using the classTypeName
+          .where('type', isEqualTo: classTypeName)
           .get();
 
       for (var classDoc in classesQuerySnapshot.docs) {
-        // Delete the class itself
         await _firestore.collection('classes').doc(classDoc.id).delete();
       }
 
-      // Step 3: Delete all bookings associated with the classTypeName
+      // Delete associated bookings
       final bookingsQuerySnapshot = await _firestore
           .collection('bookings')
-          .where('classType', isEqualTo: classTypeName) // Query using the classTypeName
+          .where('classType', isEqualTo: classTypeName)
           .get();
 
       for (var bookingDoc in bookingsQuerySnapshot.docs) {
-        // Delete the booking itself
         await _firestore.collection('bookings').doc(bookingDoc.id).delete();
       }
 
-      // Step 4: Finally, delete the class type document itself
+      // Finally, delete the class type
       await _firestore.collection('classTypes').doc(classTypeId).delete();
 
       _scaffoldMessenger.showSnackBar(
@@ -312,7 +335,4 @@ class _HomePageState extends State<HomePage> {
       );
     }
   }
-
-
-
 }

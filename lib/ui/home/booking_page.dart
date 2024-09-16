@@ -5,6 +5,10 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'dart:math'; // For random background
 
 class BookingPage extends StatefulWidget {
+  final dynamic userData; // Add user data as a parameter
+
+  const BookingPage({super.key, required this.userData});
+
   @override
   _BookingPageState createState() => _BookingPageState();
 }
@@ -51,7 +55,7 @@ class _BookingPageState extends State<BookingPage> {
         children: [
           _buildSearchField(),
           Expanded(
-            child: isAdmin ? _buildUserList() : _buildBookingList(),
+            child: isAdmin ? _buildUserList() : _buildBookingList(widget.userData), // Pass user data
           ),
         ],
       ),
@@ -76,7 +80,7 @@ class _BookingPageState extends State<BookingPage> {
   }
 
   // Build the booking list for the current user
-  Widget _buildBookingList() {
+  Widget _buildBookingList(dynamic userData) {
     return StreamBuilder<QuerySnapshot>(
       stream: _getUserBookingsStream(),
       builder: (context, snapshot) {
@@ -103,7 +107,7 @@ class _BookingPageState extends State<BookingPage> {
           padding: const EdgeInsets.all(16.0),
           children: bookings.map((booking) {
             DateTime bookingDate = DateFormat('yyyy-MM-dd').parse(booking['date']);
-            return _buildBookingCard(context, booking, bookingDate);
+            return _buildBookingCard(context, booking, bookingDate, userData); // Pass user data to booking card
           }).toList(),
         );
       },
@@ -162,7 +166,7 @@ class _BookingPageState extends State<BookingPage> {
             return Column(
               children: bookings.map((booking) {
                 DateTime bookingDate = DateFormat('yyyy-MM-dd').parse(booking['date']);
-                return _buildBookingCard(context, booking, bookingDate);
+                return _buildBookingCard(context, booking, bookingDate, widget.userData); // Pass user data
               }).toList(),
             );
           },
@@ -181,7 +185,7 @@ class _BookingPageState extends State<BookingPage> {
   }
 
   // Build individual booking card
-  Widget _buildBookingCard(BuildContext context, DocumentSnapshot booking, DateTime day) {
+  Widget _buildBookingCard(BuildContext context, DocumentSnapshot booking, DateTime day, dynamic userData) {
     bool hasAttended = booking['attend'];
     DateTime now = DateTime.now();
 
@@ -206,76 +210,93 @@ class _BookingPageState extends State<BookingPage> {
         final classData = snapshot.data!;
         final availableSeats = classData['available_times'][booking['date']][booking['hour']] as int;
 
-        return Card(
-          elevation: 4,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-          margin: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 10.0),
-          clipBehavior: Clip.antiAlias,
-          child: Stack(
-            children: [
-              // Background Image
-              Container(
-                width: double.infinity,
-                height: 180,
-                decoration: BoxDecoration(
-                  image: DecorationImage(
-                    image: AssetImage(randomBackgroundImage),
-                    fit: BoxFit.cover,
+        return GestureDetector(
+          onTap: () {
+            // Navigator.push(
+            //   context,
+            //   MaterialPageRoute(
+            //     builder: (context) => BarcodeDetailPage(
+            //       className: booking['className'],
+            //       date: booking['date'],
+            //       price: booking['price'],
+            //       hour: booking['hour'],
+            //       barcodeData: "${booking['userId']}-${booking['classDocId']}",
+            //       userData: userData, // Pass user data to BarcodeDetailPage
+            //     ),
+            //   ),
+            // );
+          },
+          child: Card(
+            elevation: 4,
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+            margin: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 10.0),
+            clipBehavior: Clip.antiAlias,
+            child: Stack(
+              children: [
+                // Background Image
+                Container(
+                  width: double.infinity,
+                  height: 180,
+                  decoration: BoxDecoration(
+                    image: DecorationImage(
+                      image: AssetImage(randomBackgroundImage),
+                      fit: BoxFit.cover,
+                    ),
                   ),
                 ),
-              ),
-              // Gradient Overlay
-              Container(
-                width: double.infinity,
-                height: 180,
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    colors: [Colors.black.withOpacity(0.7), Colors.transparent],
-                    begin: Alignment.bottomCenter,
-                    end: Alignment.topCenter,
+                // Gradient Overlay
+                Container(
+                  width: double.infinity,
+                  height: 180,
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      colors: [Colors.black.withOpacity(0.7), Colors.transparent],
+                      begin: Alignment.bottomCenter,
+                      end: Alignment.topCenter,
+                    ),
                   ),
                 ),
-              ),
-              // Booking Details
-              Positioned(
-                bottom: 16,
-                left: 16,
-                right: 16,
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      booking['className'],
-                      style: const TextStyle(
-                        fontSize: 18,
-                        color: Colors.white,
-                        fontWeight: FontWeight.bold,
+                // Booking Details
+                Positioned(
+                  bottom: 16,
+                  left: 16,
+                  right: 16,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        booking['className'],
+                        style: const TextStyle(
+                          fontSize: 18,
+                          color: Colors.white,
+                          fontWeight: FontWeight.bold,
+                        ),
                       ),
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      "Date: ${DateFormat('MMM d, yyyy').format(day)}",
-                      style: const TextStyle(fontSize: 14, color: Colors.white70),
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      "Time: ${booking['hour']}",
-                      style: const TextStyle(fontSize: 14, color: Colors.white70),
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      "Available Seats: $availableSeats",
-                      style: TextStyle(
-                        fontSize: 14,
-                        color: availableSeats == 0 ? Colors.red : Colors.blue,
+                      const SizedBox(height: 4),
+                      Text(
+                        "Date: ${DateFormat('MMM d, yyyy').format(day)}",
+                        style: const TextStyle(fontSize: 14, color: Colors.white70),
                       ),
-                    ),
-                    const SizedBox(height: 4),
-                    _buildStatusIcon(hasAttended, isLate),
-                  ],
+                      const SizedBox(height: 4),
+                      Text(
+                        "Time: ${booking['hour']}",
+                        style: const TextStyle(fontSize: 14, color: Colors.white70),
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        "Available Seats: $availableSeats",
+                        style: TextStyle(
+                          fontSize: 14,
+                          color: availableSeats == 0 ? Colors.red : Colors.blue,
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      _buildStatusIcon(hasAttended, isLate),
+                    ],
+                  ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         );
       },

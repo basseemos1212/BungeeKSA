@@ -2,7 +2,6 @@ import 'package:bloc/bloc.dart';
 import 'package:bungee_ksa/blocs/events/classes_event.dart';
 import 'package:bungee_ksa/blocs/states/classes_state.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:equatable/equatable.dart';
 
 
 

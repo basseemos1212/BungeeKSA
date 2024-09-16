@@ -13,7 +13,7 @@ class SignUpRequested extends AuthEvent {
   final String name;
   final String phoneNumber;
 
-  const SignUpRequested(this.email, this.password, this.name,this.phoneNumber);
+  const SignUpRequested(this.email, this.password, this.name, this.phoneNumber);
 }
 
 class LoginRequested extends AuthEvent {
@@ -22,8 +22,13 @@ class LoginRequested extends AuthEvent {
 
   const LoginRequested(this.email, this.password);
 }
+
 class FetchUserDataRequested extends AuthEvent {
   final String uid;
 
   const FetchUserDataRequested(this.uid);
 }
+
+class LogoutRequested extends AuthEvent {}
+
+class CheckAuthStatusRequested extends AuthEvent {}
