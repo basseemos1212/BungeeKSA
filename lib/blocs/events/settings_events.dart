@@ -1,4 +1,5 @@
 import 'package:equatable/equatable.dart';
+import 'package:flutter/material.dart';
 
 abstract class SettingsEvent extends Equatable {
   @override
@@ -24,7 +25,7 @@ class UpdatePasswordRequested extends SettingsEvent {
 }
 
 class UpdateProfilePictureRequested extends SettingsEvent {
-  final String profileImagePath; // This represents the local path of the image
+  final String profileImagePath; // Local path of the image
 
   UpdateProfilePictureRequested(this.profileImagePath);
 
@@ -42,10 +43,10 @@ class UpdatePrivacySetting extends SettingsEvent {
 }
 
 class ChangeLanguageRequested extends SettingsEvent {
-  final String newLanguage;
+  final Locale newLocale;
 
-  ChangeLanguageRequested(this.newLanguage);
+  ChangeLanguageRequested(this.newLocale);
 
   @override
-  List<Object> get props => [newLanguage];
+  List<Object> get props => [newLocale];
 }

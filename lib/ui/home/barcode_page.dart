@@ -5,8 +5,10 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:barcode_scan2/barcode_scan2.dart';
 import 'dart:math';
 
+import '../../data/user_model.dart';
+
 class BarcodePage extends StatefulWidget {
-  final dynamic userData;  // Add user data as a parameter
+  final UserModel userData;  // Add userData as an instance of UserModel
 
   const BarcodePage({super.key, required this.userData});
 
@@ -282,23 +284,19 @@ class _BarcodePageState extends State<BarcodePage> {
 
     return GestureDetector(
       onTap: () {
-       Navigator.push(
-  context,
-  MaterialPageRoute(
-    builder: (context) => BarcodeDetailPage(
-      className: classDetail['className'],
-      date: classDetail['date'],
-      price: classDetail['price'],
-      hour: classDetail['hour'],
-      barcodeData: "$userId-$classId",
-      userData: {
-        'name': widget.userData['name'],  // Pass user name
-        'email': widget.userData['email'], // Pass user email
-      },
-    ),
-  ),
-);
-
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => BarcodeDetailPage(
+              className: classDetail['className'],
+              date: classDetail['date'],
+              price: classDetail['price'],
+              hour: classDetail['hour'],
+              barcodeData: "$userId-$classId",
+             
+            ),
+          ),
+        );
       },
       child: Container(
         margin: const EdgeInsets.symmetric(vertical: 12.0),

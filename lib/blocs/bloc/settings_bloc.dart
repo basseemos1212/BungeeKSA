@@ -3,7 +3,6 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'dart:io';
-
 import '../events/settings_events.dart';
 import '../states/settings_state.dart';
 
@@ -81,8 +80,8 @@ class SettingsBloc extends Bloc<SettingsEvent, SettingsState> {
   Future<void> _onChangeLanguageRequested(ChangeLanguageRequested event, Emitter<SettingsState> emit) async {
     emit(SettingsLoading());
     try {
-      // Change language logic here (could be app-level change or saving in Firestore)
-      emit(SettingsSuccess('Language changed to ${event.newLanguage}'));
+      // Logic to change language
+      emit(LanguageChangedState(event.newLocale));
     } catch (e) {
       emit(SettingsFailure('Failed to change language: $e'));
     }

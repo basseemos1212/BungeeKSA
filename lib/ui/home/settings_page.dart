@@ -1,12 +1,13 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:image_picker/image_picker.dart'; // For picking images
+import 'package:image_picker/image_picker.dart';
 import '../../blocs/bloc/settings_bloc.dart';
 import '../../blocs/bloc/theme_bloc.dart';
 import '../../blocs/events/settings_events.dart';
 import '../../blocs/states/settings_state.dart';
 import '../../data/user_model.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart'; // Generated localization import
 
 class SettingsPage extends StatefulWidget {
   final UserModel userData; // User data passed from previous screen
@@ -32,7 +33,7 @@ class _SettingsPageState extends State<SettingsPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text("Settings"),
+        title: Text(AppLocalizations.of(context)!.settings),
       ),
       body: BlocConsumer<SettingsBloc, SettingsState>(
         listener: (context, state) {
@@ -117,14 +118,14 @@ class _SettingsPageState extends State<SettingsPage> {
     return Column(
       children: [
         ListTile(
-          title: const Text("Change Name"),
+          title: Text(AppLocalizations.of(context)!.changeName),
           trailing: const Icon(Icons.edit),
           onTap: () {
             _showNameChangeDialog(context);
           },
         ),
         ListTile(
-          title: const Text("Change Password"),
+          title: Text(AppLocalizations.of(context)!.changePassword),
           trailing: const Icon(Icons.lock),
           onTap: () {
             _showPasswordChangeDialog(context);
@@ -132,24 +133,27 @@ class _SettingsPageState extends State<SettingsPage> {
         ),
         const Divider(),
         ListTile(
-          title: const Text("Privacy Policy"),
+          title: Text(AppLocalizations.of(context)!.privacyPolicy),
           trailing: const Icon(Icons.privacy_tip),
           onTap: () {
             // Show privacy policy
           },
         ),
         ListTile(
-          title: const Text("Change Language"),
+          title: Text(AppLocalizations.of(context)!.changeLanguage),
           trailing: const Icon(Icons.language),
           onTap: () {
-            BlocProvider.of<SettingsBloc>(context).add(ChangeLanguageRequested("en"));
+            final newLocale = Localizations.localeOf(context).languageCode == 'en'
+                ? const Locale('ar')
+                : const Locale('en');
+            BlocProvider.of<SettingsBloc>(context).add(ChangeLanguageRequested(newLocale));
           },
         ),
         BlocBuilder<ThemeBloc, ThemeState>(
           builder: (context, state) {
             final themeMode = state.themeMode;
             return ListTile(
-              title: const Text("Dark Mode"),
+              title: Text(AppLocalizations.of(context)!.darkMode),
               trailing: Switch(
                 value: themeMode == ThemeMode.dark,
                 onChanged: (value) {
@@ -178,24 +182,24 @@ class _SettingsPageState extends State<SettingsPage> {
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          title: const Text("Change Name"),
+          title: Text(AppLocalizations.of(context)!.changeName),
           content: TextField(
             controller: _nameController,
-            decoration: const InputDecoration(hintText: "Enter new name"),
+            decoration: InputDecoration(hintText: AppLocalizations.of(context)!.enterNewName),
           ),
           actions: [
             TextButton(
               onPressed: () {
                 Navigator.pop(context);
               },
-              child: const Text("Cancel"),
+              child: Text(AppLocalizations.of(context)!.cancel),
             ),
             TextButton(
               onPressed: () {
                 BlocProvider.of<SettingsBloc>(context).add(UpdateNameRequested(_nameController.text));
                 Navigator.pop(context);
               },
-              child: const Text("Save"),
+              child: Text(AppLocalizations.of(context)!.save),
             ),
           ],
         );
@@ -209,25 +213,25 @@ class _SettingsPageState extends State<SettingsPage> {
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          title: const Text("Change Password"),
+          title: Text(AppLocalizations.of(context)!.changePassword),
           content: TextField(
             controller: _passwordController,
             obscureText: true,
-            decoration: const InputDecoration(hintText: "Enter new password"),
+            decoration: InputDecoration(hintText: AppLocalizations.of(context)!.enterNewPassword),
           ),
           actions: [
             TextButton(
               onPressed: () {
                 Navigator.pop(context);
               },
-              child: const Text("Cancel"),
+              child: Text(AppLocalizations.of(context)!.cancel),
             ),
             TextButton(
               onPressed: () {
                 BlocProvider.of<SettingsBloc>(context).add(UpdatePasswordRequested(_passwordController.text));
                 Navigator.pop(context);
               },
-              child: const Text("Save"),
+              child: Text(AppLocalizations.of(context)!.save),
             ),
           ],
         );

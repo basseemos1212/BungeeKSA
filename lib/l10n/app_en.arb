@@ -1,0 +1,68 @@
+{
+  "@@locale": "en",
+  "settings": "Settings",
+  "changeName": "Change Name",
+  "enterNewName": "Enter new name",
+  "changePassword": "Change Password",
+  "enterNewPassword": "Enter new password",
+  "changeProfilePicture": "Change Profile Picture",
+  "privacyPolicy": "Privacy Policy",
+  "changeLanguage": "Change Language",
+  "darkMode": "Dark Mode",
+  "save": "Save",
+  "cancel": "Cancel",
+  "nameUpdatedSuccess": "Name updated successfully!",
+  "passwordUpdatedSuccess": "Password updated successfully!",
+  "profilePictureUpdatedSuccess": "Profile picture updated successfully!",
+  "name": "Name",
+  "email": "Email",
+
+  "@settings": {
+    "description": "Title of the settings page"
+  },
+  "@changeName": {
+    "description": "The option to change the user's name in the settings"
+  },
+  "@enterNewName": {
+    "description": "Placeholder text for the 'Enter new name' field"
+  },
+  "@changePassword": {
+    "description": "The option to change the user's password in the settings"
+  },
+  "@enterNewPassword": {
+    "description": "Placeholder text for the 'Enter new password' field"
+  },
+  "@changeProfilePicture": {
+    "description": "The option to change the user's profile picture in the settings"
+  },
+  "@privacyPolicy": {
+    "description": "Link or button to view the privacy policy"
+  },
+  "@changeLanguage": {
+    "description": "The option to change the app language"
+  },
+  "@darkMode": {
+    "description": "The option to toggle dark mode on or off"
+  },
+  "@save": {
+    "description": "Button text for saving changes"
+  },
+  "@cancel": {
+    "description": "Button text for canceling actions"
+  },
+  "@nameUpdatedSuccess": {
+    "description": "Message shown when the user's name is updated successfully"
+  },
+  "@passwordUpdatedSuccess": {
+    "description": "Message shown when the user's password is updated successfully"
+  },
+  "@profilePictureUpdatedSuccess": {
+    "description": "Message shown when the user's profile picture is updated successfully"
+  },
+  "@name": {
+    "description": "Label for the user's name"
+  },
+  "@email": {
+    "description": "Label for the user's email"
+  }
+}

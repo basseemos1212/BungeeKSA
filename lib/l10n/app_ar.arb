@@ -1,0 +1,68 @@
+{
+  "@@locale": "ar",
+  "settings": "الإعدادات",
+  "changeName": "تغيير الاسم",
+  "enterNewName": "أدخل اسمًا جديدًا",
+  "changePassword": "تغيير كلمة المرور",
+  "enterNewPassword": "أدخل كلمة مرور جديدة",
+  "changeProfilePicture": "تغيير صورة الملف الشخصي",
+  "privacyPolicy": "سياسة الخصوصية",
+  "changeLanguage": "تغيير اللغة",
+  "darkMode": "الوضع الداكن",
+  "save": "حفظ",
+  "cancel": "إلغاء",
+  "nameUpdatedSuccess": "تم تحديث الاسم بنجاح!",
+  "passwordUpdatedSuccess": "تم تحديث كلمة المرور بنجاح!",
+  "profilePictureUpdatedSuccess": "تم تحديث صورة الملف الشخصي بنجاح!",
+  "name": "الاسم",
+  "email": "البريد الإلكتروني",
+
+  "@settings": {
+    "description": "عنوان صفحة الإعدادات"
+  },
+  "@changeName": {
+    "description": "خيار لتغيير اسم المستخدم في الإعدادات"
+  },
+  "@enterNewName": {
+    "description": "نص العنصر النائب لحقل 'أدخل اسمًا جديدًا'"
+  },
+  "@changePassword": {
+    "description": "خيار لتغيير كلمة مرور المستخدم في الإعدادات"
+  },
+  "@enterNewPassword": {
+    "description": "نص العنصر النائب لحقل 'أدخل كلمة مرور جديدة'"
+  },
+  "@changeProfilePicture": {
+    "description": "خيار لتغيير صورة الملف الشخصي للمستخدم في الإعدادات"
+  },
+  "@privacyPolicy": {
+    "description": "رابط أو زر لعرض سياسة الخصوصية"
+  },
+  "@changeLanguage": {
+    "description": "خيار لتغيير لغة التطبيق"
+  },
+  "@darkMode": {
+    "description": "خيار لتبديل الوضع الداكن"
+  },
+  "@save": {
+    "description": "نص زر لحفظ التغييرات"
+  },
+  "@cancel": {
+    "description": "نص زر لإلغاء الإجراءات"
+  },
+  "@nameUpdatedSuccess": {
+    "description": "رسالة تظهر عند تحديث اسم المستخدم بنجاح"
+  },
+  "@passwordUpdatedSuccess": {
+    "description": "رسالة تظهر عند تحديث كلمة مرور المستخدم بنجاح"
+  },
+  "@profilePictureUpdatedSuccess": {
+    "description": "رسالة تظهر عند تحديث صورة الملف الشخصي للمستخدم بنجاح"
+  },
+  "@name": {
+    "description": "تسمية لاسم المستخدم"
+  },
+  "@email": {
+    "description": "تسمية لبريد المستخدم الإلكتروني"
+  }
+}
