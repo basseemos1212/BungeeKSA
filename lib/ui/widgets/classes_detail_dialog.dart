@@ -3,6 +3,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:intl/intl.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart'; // Import localization
 
 class ClassDetailsDialog extends StatefulWidget {
   final String className;
@@ -62,7 +63,7 @@ class _ClassDetailsDialogState extends State<ClassDetailsDialog> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text("Price: ${widget.price} SAR"),
+            Text("${AppLocalizations.of(context)!.price}: ${widget.price} ${AppLocalizations.of(context)!.currency}"), // Localized "Price"
             const SizedBox(height: 8),
             _buildAvailableDays(),
             if (_selectedDay != null) ...[
@@ -75,7 +76,7 @@ class _ClassDetailsDialogState extends State<ClassDetailsDialog> {
       actions: [
         TextButton(
           onPressed: () => Navigator.of(context).pop(),
-          child: const Text('Close', style: TextStyle(color: Colors.red)),
+          child: Text(AppLocalizations.of(context)!.close, style: const TextStyle(color: Colors.red)), // Localized "Close"
         ),
         TextButton(
           onPressed: _selectedHour != null
@@ -83,7 +84,7 @@ class _ClassDetailsDialogState extends State<ClassDetailsDialog> {
             _bookClass();
           }
               : null,
-          child: const Text('Book'),
+          child: Text(AppLocalizations.of(context)!.book), // Localized "Book"
         ),
       ],
     );
@@ -94,7 +95,7 @@ class _ClassDetailsDialogState extends State<ClassDetailsDialog> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text("Available Days:", style: TextStyle(fontWeight: FontWeight.bold)),
+        Text(AppLocalizations.of(context)!.availableDays, style: const TextStyle(fontWeight: FontWeight.bold)), // Localized "Available Days"
         const SizedBox(height: 8),
         Wrap(
           spacing: 8.0,
@@ -123,7 +124,7 @@ class _ClassDetailsDialogState extends State<ClassDetailsDialog> {
     final DateTime selectedDayDate = DateFormat('yyyy-MM-dd').parse(_selectedDay!);
     final filteredAvailableHours = availableHours.where((hour) {
       if (DateFormat('yyyy-MM-dd').format(selectedDayDate) == DateFormat('yyyy-MM-dd').format(now)) {
-        DateTime parsedHour = DateFormat('h:mm a').parse(hour);
+        DateTime parsedHour = DateFormat('h:mm a', 'en').parse(hour); // Force English format for the time
         DateTime todayHour = DateTime(now.year, now.month, now.day, parsedHour.hour, parsedHour.minute);
         return todayHour.isAfter(now);
       }
@@ -133,14 +134,14 @@ class _ClassDetailsDialogState extends State<ClassDetailsDialog> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text("Available Hours:", style: TextStyle(fontWeight: FontWeight.bold)),
+        Text(AppLocalizations.of(context)!.availableHours, style: const TextStyle(fontWeight: FontWeight.bold)), // Localized "Available Hours"
         const SizedBox(height: 8),
         Wrap(
           spacing: 8.0,
           children: filteredAvailableHours.map((hour) {
             int availableSeats = availableTimes[_selectedDay]![hour]!;
             return ChoiceChip(
-              label: Text("$hour ($availableSeats seats left)"),
+              label: Text("$hour (${AppLocalizations.of(context)!.seatsLeft}:$availableSeats)"), // Localized seats left
               selected: _selectedHour == hour,
               onSelected: (selected) {
                 if (availableSeats > 0) {
@@ -205,24 +206,24 @@ class _ClassDetailsDialogState extends State<ClassDetailsDialog> {
                 setState(() {});
                 Navigator.of(context).pop();
                 ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('Booking successful!')),
+                  SnackBar(content: Text(AppLocalizations.of(context)!.bookingSuccessful)), // Localized success message
                 );
               }
             } else {
               if (mounted) {
                 ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('You have already booked this class at the selected time.')),
+                  SnackBar(content: Text(AppLocalizations.of(context)!.alreadyBooked)), // Localized already booked message
                 );
               }
             }
           } else {
             ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(content: Text('User not logged in!')),
+              SnackBar(content: Text(AppLocalizations.of(context)!.userNotLoggedIn)), // Localized user not logged in message
             );
           }
         } else {
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('No available seats for the selected time.')),
+            SnackBar(content: Text(AppLocalizations.of(context)!.noSeatsAvailable)), // Localized no seats available message
           );
         }
       }

@@ -16,10 +16,107 @@
   "profilePictureUpdatedSuccess": "تم تحديث صورة الملف الشخصي بنجاح!",
   "name": "الاسم",
   "email": "البريد الإلكتروني",
+  "welcomeMessage": "مرحبًا بك في Bungee KSA!",
+  "loading": "جار التحميل...",
+  "fetchingUserDataFailed": "فشل في جلب بيانات المستخدم",
+  "home": "الرئيسية",
+  "bookings": "الحجوزات",
+  "barcode": "الباركود",
+  "appBarTitle": "Bungee KSA",
+  "searchbar":"ابحث عن ايميل المستخدم",
+  "bookingAvailablity":"لا يوجد حجوزات",
+  "user":"حجوزات المستخدمين",
+  "barcodeUser":"باركود المستخدمين",
+  "bungeeClasses":"حصص البانجي",
+  "pleaseFillAllFields": "يرجى ملء جميع الحقول",
+  "failedToAddClass": "فشل في إضافة الفصل",
+  "classAddedSuccessfully": "تمت إضافة الفصل بنجاح",
+  "addClass": "إضافة الفصل",
+  "ok": "موافق",
+  "numberOfSeats": "عدد المقاعد",
+  "setAvailableSeats": "حدد المقاعد المتاحة لـ",
+  "addAvailableHoursAndSeats": "إضافة ساعات متاحة ومقاعد",
+  "availableHoursAndSeats": "الساعات المتاحة والمقاعد",
+  "noDatesSelected": "لم يتم تحديد أي تواريخ",
+  "price": "السعر",
+  "className": "اسم الحصه",
+  "selectClassType": "اختر نوع الحصه",
+  "addNewClass": "إضافة حصه جديد",
+  "selectActiveDates": "حدد التواريخ النشطة",
+"addNewClassType": "إضافة نوع حصص جديد",
+  "classTypeName": "اسم نوع الحصص",
+  "addClassType": "إضافة نوع الحصص",
 
-  "@settings": {
-    "description": "عنوان صفحة الإعدادات"
+  "classTypeAddedSuccess": "تمت إضافة نوع الحصص بنجاح",
+  "fillClassTypeName": "يرجى ملء اسم نوع الحصص",
+  "myBookings": "حجوزاتي",
+
+  "@myBookings":{
+    "description": "تسمية لحقل إدخال اسم نوع الحصص"
   },
+  "@addNewClassType": {
+    "description": "عنوان شاشة إضافة نوع الحصص"
+  },
+  "searchClassByName": "ابحث.....",
+
+  "@searchClassByName":{
+    "description": "تسمية لحقل إدخال اسم نوع الحصص"
+  },
+  "currency":"ريال سعودي",
+  "@currency":{},
+  "@classTypeName": {
+    "description": "تسمية لحقل إدخال اسم نوع الحصص"
+  },
+  "@addClassType": {
+    "description": "نص الزر لإضافة نوع الحصص"
+  },
+  "@classTypeAddedSuccess": {
+    "description": "رسالة نجاح بعد إضافة نوع الحصص"
+  },
+  "@fillClassTypeName": {
+    "description": "رسالة خطأ عند عدم تعبئة حقل اسم نوع الحصص"
+  },
+  "@bungeeClasses":{
+    "description": "hint text for no bookings"
+  },
+  "@barcodeUser":{
+    "description": "hint text for no bookings"
+  },
+  "@user":{
+    "description": "hint text for no bookings"
+  },
+  "@bookingAvailablity":{
+    "description": "hint text for no bookings"
+  },
+  "@searchbar":{
+    "description": "hint text for search by email"
+  },
+  "@welcomeMessage": {
+    "description": "رسالة الترحيب المعروضة في الشاشة الرئيسية"
+  },
+  "@loading": {
+    "description": "رسالة التحميل عند جلب بيانات المستخدم"
+  },
+  "@fetchingUserDataFailed": {
+    "description": "رسالة الخطأ عند فشل جلب بيانات المستخدم"
+  },
+  "@home": {
+    "description": "تصنيف لعلامة التبويب الرئيسية"
+  },
+  "@bookings": {
+    "description": "تصنيف لعلامة تبويب الحجوزات"
+  },
+  "@barcode": {
+    "description": "تصنيف لعلامة تبويب الباركود"
+  },
+  "@settings": {
+    "description": "تصنيف لعلامة تبويب الإعدادات"
+  },
+  "@appBarTitle": {
+    "description": "عنوان شريط التطبيق"
+  }
+
+,
   "@changeName": {
     "description": "خيار لتغيير اسم المستخدم في الإعدادات"
   },
@@ -64,5 +161,122 @@
   },
   "@email": {
     "description": "تسمية لبريد المستخدم الإلكتروني"
+  },
+  "@addNewClass": {
+    "description": "عنوان شاشة إضافة الفصل"
+  },
+  "@className": {
+    "description": "تسمية لحقل إدخال اسم الفصل"
+  },
+  "@price": {
+    "description": "تسمية لحقل إدخال سعر الفصل"
+  },
+  "@selectClassType": {
+    "description": "تسمية القائمة المنسدلة لاختيار نوع الفصل"
+  },
+  "@selectActiveDates": {
+    "description": "نص الزر لاختيار التواريخ النشطة"
+  },
+  "@noDatesSelected": {
+    "description": "الرسالة عندما لا يتم تحديد تواريخ"
+  },
+  "@availableHoursAndSeats": {
+    "description": "تسمية تعرض الساعات المتاحة وعدد المقاعد"
+  },
+  "@addAvailableHoursAndSeats": {
+    "description": "نص الزر لإضافة ساعات متاحة ومقاعد"
+  },
+  "@setAvailableSeats": {
+    "description": "عنوان مربع الحوار لتحديد المقاعد المتاحة لساعة محددة"
+  },
+  "@numberOfSeats": {
+    "description": "تسمية لحقل إدخال عدد المقاعد"
+  },
+  "@ok": {
+    "description": "نص زر لتأكيد الإجراء"
+  },
+  "@addClass": {
+    "description": "نص الزر لإضافة الفصل"
+  },
+  "@classAddedSuccessfully": {
+    "description": "رسالة نجاح بعد إضافة الفصل"
+  },
+  "@failedToAddClass": {
+    "description": "رسالة الخطأ عند فشل إضافة الفصل"
+  },
+  "@pleaseFillAllFields": {
+    "description": "رسالة تطالب المستخدم بملء جميع الحقول"
   }
+  ,
+  "availableDays": "الأيام المتاحة",
+  "@availableDays": {},
+  "availableHours": "الساعات المتاحة",
+  "@availableHours": {},
+  "seatsLeft": "مقاعد متبقية",
+  "@seatsLeft": {},
+  "book": "احجز",
+  "@book": {},
+  "close": "إغلاق",
+  "@close": {},
+  "bookingSuccessful": "تم الحجز بنجاح!",
+  "@bookingSuccessful": {},
+  "alreadyBooked": "لقد قمت بالفعل بحجز هذا الفصل في الوقت المحدد.",
+  "@alreadyBooked": {},
+  "noSeatsAvailable": "لا توجد مقاعد متاحة في الوقت المحدد.",
+  "@noSeatsAvailable": {},
+  "userNotLoggedIn": "المستخدم غير مسجل الدخول!",
+  "@userNotLoggedIn": {}
+  , "userManagement": "إدارة المستخدمين",
+  "@userManagement": {},
+  "searchUsers": "البحث بواسطة البريد الإلكتروني",
+  "@searchUsers": {},
+  "availableSeats": "المقاعد المتاحة",
+  "@availableSeats": {},
+  "noBookingsAvailable": "لا توجد حجوزات",
+  "@noBookingsAvailable": {},
+  "time": "الوقت",
+  "@time": {},
+  "date": "التاريخ",
+  "@date": {},
+  "scanning": "جاري المسح...",
+  "@scanning": {},
+  "startScanning": "ابدأ المسح",
+  "@startScanning": {},
+  "scanSuccessful": "تم المسح بنجاح",
+  "@scanSuccessful": {},
+  "scanFailed": "فشل المسح",
+  "@scanFailed": {},
+  "userMarkedAsAttended": "تم وضع علامة على المستخدم كحضرت.",
+  "@userMarkedAsAttended": {},
+  "invalidBarcodeOrBookingNotFound": "الباركود غير صالح أو لم يتم العثور على الحجز.",
+  "@invalidBarcodeOrBookingNotFound": {},
+  "noUsersFound": "لم يتم العثور على مستخدمين.",
+  "@noUsersFound": {},
+  "noClassesAvailable": "لا توجد فصول متاحة للحضور.",
+  "@noClassesAvailable": {},
+ 
+  "tapToViewBarcode": "اضغط لعرض الباركود",
+  "@tapToViewBarcode": {},
+  "giveFeedback": "إعطاء ملاحظات",
+  "@giveFeedback": {},
+  "rateWorkout": "قيم التمرين",
+  "@rateWorkout": {},
+  "rateTrainer": "قيم المدرب",
+  "@rateTrainer": {},
+  "rateAtmosphere": "قيم الجو",
+  "@rateAtmosphere": {},
+  "additionalFeedback": "ملاحظات إضافية",
+  "@additionalFeedback": {},
+  "submitFeedback": "إرسال الملاحظات",
+  "@submitFeedback": {},
+  "feedbackSubmittedSuccessfully": "تم إرسال الملاحظات بنجاح!",
+  "@feedbackSubmittedSuccessfully": {},
+  "errorSubmittingFeedback": "خطأ في إرسال الملاحظات",
+  "@errorSubmittingFeedback": {},
+  "userID": "معرّف المستخدم",
+  "@userID": {},
+  "scanBarcodeAtEntrance": "قم بمسح هذا الرمز عند المدخل.",
+  "@scanBarcodeAtEntrance": {} ,
+  "logout":"تسجيل الخروج",
+  "@logout": {} 
 }

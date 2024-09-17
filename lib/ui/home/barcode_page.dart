@@ -4,7 +4,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:barcode_scan2/barcode_scan2.dart';
 import 'dart:math';
-
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import '../../data/user_model.dart';
 
 class BarcodePage extends StatefulWidget {
@@ -40,7 +40,7 @@ class _BarcodePageState extends State<BarcodePage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Available Classes'),
+        title: Text(AppLocalizations.of(context)!.barcodeUser),
       ),
       body: userEmail != null && userEmail!.contains('@manager')
           ? _buildManagerScanner()  // Manager scans barcodes
@@ -55,7 +55,7 @@ class _BarcodePageState extends State<BarcodePage> {
     return Center(
       child: ElevatedButton(
         onPressed: isScanning ? null : _startBarcodeScan,  // Disable button during scanning
-        child: Text(isScanning ? 'Scanning...' : 'Start Scanning'),
+        child: Text(isScanning ? AppLocalizations.of(context)!.scanning : AppLocalizations.of(context)!.startScanning),
       ),
     );
   }
@@ -128,22 +128,22 @@ class _BarcodePageState extends State<BarcodePage> {
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          title: Text(success ? 'Scan Successful' : 'Scan Failed'),
+          title: Text(success ? AppLocalizations.of(context)!.scanSuccessful : AppLocalizations.of(context)!.scanFailed),
           content: success
-              ? const Column(
+              ? Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    Icon(Icons.check_circle, color: Colors.green, size: 100),
-                    SizedBox(height: 20),
-                    Text('User has been marked as attended.'),
+                    const Icon(Icons.check_circle, color: Colors.green, size: 100),
+                    const SizedBox(height: 20),
+                    Text(AppLocalizations.of(context)!.userMarkedAsAttended),
                   ],
                 )
-              : const Column(
+              : Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    Icon(Icons.cancel, color: Colors.red, size: 100),
-                    SizedBox(height: 20),
-                    Text('Invalid barcode or booking not found.'),
+                    const Icon(Icons.cancel, color: Colors.red, size: 100),
+                    const SizedBox(height: 20),
+                    Text(AppLocalizations.of(context)!.invalidBarcodeOrBookingNotFound),
                   ],
                 ),
           actions: [
@@ -169,7 +169,7 @@ class _BarcodePageState extends State<BarcodePage> {
         }
 
         if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
-          return const Center(child: Text('No users found.'));
+          return Center(child: Text(AppLocalizations.of(context)!.noUsersFound));
         }
 
         final users = snapshot.data!.docs;
@@ -224,9 +224,9 @@ class _BarcodePageState extends State<BarcodePage> {
         }
 
         if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
-          return const Padding(
-            padding: EdgeInsets.all(16.0),
-            child: Text('No bookings available.'),
+          return Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: Text(AppLocalizations.of(context)!.noBookingsAvailable),
           );
         }
 
@@ -259,7 +259,7 @@ class _BarcodePageState extends State<BarcodePage> {
         }
 
         if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
-          return const Center(child: Text('No available classes for attendance.'));
+          return Center(child: Text(AppLocalizations.of(context)!.noClassesAvailable));
         }
 
         final bookings = snapshot.data!.docs;
@@ -293,7 +293,6 @@ class _BarcodePageState extends State<BarcodePage> {
               price: classDetail['price'],
               hour: classDetail['hour'],
               barcodeData: "$userId-$classId",
-             
             ),
           ),
         );
@@ -334,7 +333,7 @@ class _BarcodePageState extends State<BarcodePage> {
                   const Icon(Icons.date_range, color: Colors.white70, size: 18),
                   const SizedBox(width: 10),
                   Text(
-                    "Date: ${classDetail['date']}",
+                    "${AppLocalizations.of(context)!.date}: ${classDetail['date']}",
                     style: const TextStyle(fontSize: 16, color: Colors.white70),
                   ),
                 ],
@@ -345,7 +344,7 @@ class _BarcodePageState extends State<BarcodePage> {
                   const Icon(Icons.access_time, color: Colors.white70, size: 18),
                   const SizedBox(width: 10),
                   Text(
-                    "Time: ${classDetail['hour']}",
+                    "${AppLocalizations.of(context)!.time}: ${classDetail['hour']}",
                     style: const TextStyle(fontSize: 16, color: Colors.white70),
                   ),
                 ],
@@ -356,15 +355,15 @@ class _BarcodePageState extends State<BarcodePage> {
                   const Icon(Icons.attach_money, color: Colors.white70, size: 18),
                   const SizedBox(width: 10),
                   Text(
-                    "Price: ${classDetail['price']} SAR",
+                    "${AppLocalizations.of(context)!.price}: ${classDetail['price']} SAR",
                     style: const TextStyle(fontSize: 16, color: Colors.greenAccent),
                   ),
                 ],
               ),
               const SizedBox(height: 10),
-              const Text(
-                "Tap to view barcode",
-                style: TextStyle(fontSize: 14, color: Colors.amberAccent),
+              Text(
+                AppLocalizations.of(context)!.tapToViewBarcode,
+                style: const TextStyle(fontSize: 14, color: Colors.amberAccent),
               ),
             ],
           ),

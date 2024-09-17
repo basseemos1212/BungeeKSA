@@ -3,6 +3,7 @@ import 'package:intl/intl.dart'; // For formatting dates
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'dart:math'; // For random background
+import 'package:flutter_gen/gen_l10n/app_localizations.dart'; // For localization
 
 class BookingPage extends StatefulWidget {
   final dynamic userData; // Add user data as a parameter
@@ -49,7 +50,9 @@ class _BookingPageState extends State<BookingPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: isAdmin ? const Text('Users') : const Text('My Bookings'),
+        title: isAdmin
+            ? Text(AppLocalizations.of(context)!.userManagement) // Localized admin title
+            : Text(AppLocalizations.of(context)!.myBookings), // Localized user title
       ),
       body: Column(
         children: [
@@ -69,7 +72,9 @@ class _BookingPageState extends State<BookingPage> {
       child: TextField(
         controller: _searchController,
         decoration: InputDecoration(
-          hintText: isAdmin ? 'Search users by email...' : 'Search by class name...',
+          hintText: isAdmin
+              ? AppLocalizations.of(context)!.searchUsers // Localized admin search hint
+              : AppLocalizations.of(context)!.searchClassByName, // Localized user search hint
           prefixIcon: const Icon(Icons.search),
           border: OutlineInputBorder(
             borderRadius: BorderRadius.circular(12),
@@ -124,7 +129,7 @@ class _BookingPageState extends State<BookingPage> {
         }
 
         if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
-          return const Center(child: Text('No users available.'));
+          return Center(child: Text("")); // Localized no users text
         }
 
         final users = snapshot.data!.docs;
@@ -157,8 +162,8 @@ class _BookingPageState extends State<BookingPage> {
               .snapshots(),
           builder: (context, snapshot) {
             if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
-              return const ListTile(
-                title: Text('No bookings available.'),
+              return ListTile(
+                title: Text(AppLocalizations.of(context)!.noBookingsAvailable), // Localized no bookings message
               );
             }
 
@@ -212,19 +217,7 @@ class _BookingPageState extends State<BookingPage> {
 
         return GestureDetector(
           onTap: () {
-            // Navigator.push(
-            //   context,
-            //   MaterialPageRoute(
-            //     builder: (context) => BarcodeDetailPage(
-            //       className: booking['className'],
-            //       date: booking['date'],
-            //       price: booking['price'],
-            //       hour: booking['hour'],
-            //       barcodeData: "${booking['userId']}-${booking['classDocId']}",
-            //       userData: userData, // Pass user data to BarcodeDetailPage
-            //     ),
-            //   ),
-            // );
+            // Navigate to booking detail or other page
           },
           child: Card(
             elevation: 4,
@@ -274,17 +267,17 @@ class _BookingPageState extends State<BookingPage> {
                       ),
                       const SizedBox(height: 4),
                       Text(
-                        "Date: ${DateFormat('MMM d, yyyy').format(day)}",
+                        "${AppLocalizations.of(context)!.date}: ${DateFormat('MMM d, yyyy').format(day)}", // Localized date
                         style: const TextStyle(fontSize: 14, color: Colors.white70),
                       ),
                       const SizedBox(height: 4),
                       Text(
-                        "Time: ${booking['hour']}",
+                        "${AppLocalizations.of(context)!.time}: ${booking['hour']}", // Localized time
                         style: const TextStyle(fontSize: 14, color: Colors.white70),
                       ),
                       const SizedBox(height: 4),
                       Text(
-                        "Available Seats: $availableSeats",
+                        "${AppLocalizations.of(context)!.availableSeats}: $availableSeats", // Localized available seats
                         style: TextStyle(
                           fontSize: 14,
                           color: availableSeats == 0 ? Colors.red : Colors.blue,
@@ -316,7 +309,7 @@ class _BookingPageState extends State<BookingPage> {
     return Padding(
       padding: const EdgeInsets.all(8.0),
       child: Text(
-        'No bookings available',
+        AppLocalizations.of(context)!.noBookingsAvailable, // Localized no bookings message
         style: TextStyle(color: Colors.grey.shade600),
       ),
     );

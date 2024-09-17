@@ -2,12 +2,14 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:firebase_auth/firebase_auth.dart'; // Import for logout functionality
 import '../../blocs/bloc/settings_bloc.dart';
 import '../../blocs/bloc/theme_bloc.dart';
 import '../../blocs/events/settings_events.dart';
 import '../../blocs/states/settings_state.dart';
 import '../../data/user_model.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart'; // Generated localization import
+import '../login_screen.dart'; // Import for redirecting to login after logout
 
 class SettingsPage extends StatefulWidget {
   final UserModel userData; // User data passed from previous screen
@@ -38,9 +40,11 @@ class _SettingsPageState extends State<SettingsPage> {
       body: BlocConsumer<SettingsBloc, SettingsState>(
         listener: (context, state) {
           if (state is SettingsSuccess) {
-            ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(state.message)));
+            ScaffoldMessenger.of(context)
+                .showSnackBar(SnackBar(content: Text(state.message)));
           } else if (state is SettingsFailure) {
-            ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(state.error)));
+            ScaffoldMessenger.of(context)
+                .showSnackBar(SnackBar(content: Text(state.error)));
           }
         },
         builder: (context, state) {
@@ -99,6 +103,7 @@ class _SettingsPageState extends State<SettingsPage> {
           style: const TextStyle(
             fontSize: 20,
             fontWeight: FontWeight.bold,
+            
           ),
         ),
         const SizedBox(height: 8),
@@ -133,20 +138,14 @@ class _SettingsPageState extends State<SettingsPage> {
         ),
         const Divider(),
         ListTile(
-          title: Text(AppLocalizations.of(context)!.privacyPolicy),
-          trailing: const Icon(Icons.privacy_tip),
-          onTap: () {
-            // Show privacy policy
-          },
-        ),
-        ListTile(
           title: Text(AppLocalizations.of(context)!.changeLanguage),
           trailing: const Icon(Icons.language),
           onTap: () {
             final newLocale = Localizations.localeOf(context).languageCode == 'en'
                 ? const Locale('ar')
                 : const Locale('en');
-            BlocProvider.of<SettingsBloc>(context).add(ChangeLanguageRequested(newLocale));
+            BlocProvider.of<SettingsBloc>(context)
+                .add(ChangeLanguageRequested(newLocale));
           },
         ),
         BlocBuilder<ThemeBloc, ThemeState>(
@@ -157,10 +156,19 @@ class _SettingsPageState extends State<SettingsPage> {
               trailing: Switch(
                 value: themeMode == ThemeMode.dark,
                 onChanged: (value) {
-                  BlocProvider.of<ThemeBloc>(context).add(ThemeChanged(value ? ThemeMode.dark : ThemeMode.light));
+                  BlocProvider.of<ThemeBloc>(context)
+                      .add(ThemeChanged(value ? ThemeMode.dark : ThemeMode.light));
                 },
               ),
             );
+          },
+        ),
+        const Divider(),
+        ListTile(
+          title: Text(AppLocalizations.of(context)!.logout),
+          trailing: const Icon(Icons.exit_to_app,color: Colors.red,),
+          onTap: () {
+            _logout(context); // Call logout function
           },
         ),
       ],
@@ -172,7 +180,8 @@ class _SettingsPageState extends State<SettingsPage> {
     final XFile? image = await _picker.pickImage(source: ImageSource.gallery);
 
     if (image != null) {
-      BlocProvider.of<SettingsBloc>(context).add(UpdateProfilePictureRequested(image.path));
+      BlocProvider.of<SettingsBloc>(context)
+          .add(UpdateProfilePictureRequested(image.path));
     }
   }
 
@@ -185,7 +194,9 @@ class _SettingsPageState extends State<SettingsPage> {
           title: Text(AppLocalizations.of(context)!.changeName),
           content: TextField(
             controller: _nameController,
-            decoration: InputDecoration(hintText: AppLocalizations.of(context)!.enterNewName),
+            decoration: InputDecoration(
+              hintText: AppLocalizations.of(context)!.enterNewName,
+            ),
           ),
           actions: [
             TextButton(
@@ -196,7 +207,8 @@ class _SettingsPageState extends State<SettingsPage> {
             ),
             TextButton(
               onPressed: () {
-                BlocProvider.of<SettingsBloc>(context).add(UpdateNameRequested(_nameController.text));
+                BlocProvider.of<SettingsBloc>(context)
+                    .add(UpdateNameRequested(_nameController.text));
                 Navigator.pop(context);
               },
               child: Text(AppLocalizations.of(context)!.save),
@@ -217,7 +229,9 @@ class _SettingsPageState extends State<SettingsPage> {
           content: TextField(
             controller: _passwordController,
             obscureText: true,
-            decoration: InputDecoration(hintText: AppLocalizations.of(context)!.enterNewPassword),
+            decoration: InputDecoration(
+              hintText: AppLocalizations.of(context)!.enterNewPassword,
+            ),
           ),
           actions: [
             TextButton(
@@ -228,7 +242,8 @@ class _SettingsPageState extends State<SettingsPage> {
             ),
             TextButton(
               onPressed: () {
-                BlocProvider.of<SettingsBloc>(context).add(UpdatePasswordRequested(_passwordController.text));
+                BlocProvider.of<SettingsBloc>(context)
+                    .add(UpdatePasswordRequested(_passwordController.text));
                 Navigator.pop(context);
               },
               child: Text(AppLocalizations.of(context)!.save),
@@ -236,6 +251,16 @@ class _SettingsPageState extends State<SettingsPage> {
           ],
         );
       },
+    );
+  }
+
+  // Logout function
+  Future<void> _logout(BuildContext context) async {
+    await FirebaseAuth.instance.signOut(); // Log the user out
+    Navigator.of(context).pushReplacement(
+      MaterialPageRoute(
+        builder: (context) =>  LoginScreen(), // Redirect to LoginScreen after logout
+      ),
     );
   }
 }

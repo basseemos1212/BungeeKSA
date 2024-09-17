@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter_rating_bar/flutter_rating_bar.dart'; // For star ratings
+import 'package:flutter_gen/gen_l10n/app_localizations.dart'; // For localization
 
 class FeedbackFormPage extends StatefulWidget {
   final String classId;
@@ -41,12 +42,12 @@ class _FeedbackFormPageState extends State<FeedbackFormPage> {
       });
 
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Feedback submitted successfully!')),
+        SnackBar(content: Text(AppLocalizations.of(context)!.feedbackSubmittedSuccessfully)),
       );
       Navigator.pop(context); // Close the feedback form
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error submitting feedback: $e')),
+        SnackBar(content: Text('${AppLocalizations.of(context)!.errorSubmittingFeedback}: $e')),
       );
     }
   }
@@ -55,14 +56,14 @@ class _FeedbackFormPageState extends State<FeedbackFormPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Give Feedback'),
+        title: Text(AppLocalizations.of(context)!.giveFeedback),
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text('Rate the Workout:'),
+            Text(AppLocalizations.of(context)!.rateWorkout),
             RatingBar.builder(
               initialRating: workoutRating,
               minRating: 1,
@@ -77,7 +78,7 @@ class _FeedbackFormPageState extends State<FeedbackFormPage> {
               },
             ),
             const SizedBox(height: 20),
-            const Text('Rate the Trainer:'),
+            Text(AppLocalizations.of(context)!.rateTrainer),
             RatingBar.builder(
               initialRating: trainerRating,
               minRating: 1,
@@ -92,7 +93,7 @@ class _FeedbackFormPageState extends State<FeedbackFormPage> {
               },
             ),
             const SizedBox(height: 20),
-            const Text('Rate the Atmosphere:'),
+            Text(AppLocalizations.of(context)!.rateAtmosphere),
             RatingBar.builder(
               initialRating: atmosphereRating,
               minRating: 1,
@@ -109,16 +110,16 @@ class _FeedbackFormPageState extends State<FeedbackFormPage> {
             const SizedBox(height: 20),
             TextField(
               controller: feedbackController,
-              decoration: const InputDecoration(
-                labelText: 'Additional Feedback',
-                border: OutlineInputBorder(),
+              decoration: InputDecoration(
+                labelText: AppLocalizations.of(context)!.additionalFeedback,
+                border: const OutlineInputBorder(),
               ),
               maxLines: 5,
             ),
             const SizedBox(height: 20),
             ElevatedButton(
               onPressed: _submitFeedback,
-              child: const Text('Submit Feedback'),
+              child: Text(AppLocalizations.of(context)!.submitFeedback),
             ),
           ],
         ),

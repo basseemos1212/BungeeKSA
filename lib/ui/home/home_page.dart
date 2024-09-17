@@ -4,6 +4,8 @@ import 'package:flutter/material.dart';
 import 'dart:math'; // For random selection
 
 import 'package:bungee_ksa/ui/widgets/classes_detail_dialog.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart'; // For localization
+
 
 class HomePage extends StatefulWidget {
   final dynamic userData; // Pass user data to HomePage
@@ -40,7 +42,7 @@ class _HomePageState extends State<HomePage> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Bungee Classes'),
+        title:  Text(AppLocalizations.of(context)!.bungeeClasses),
         actions: [
           // Show "Add Class" button for admins and managers
           if (_isAdminOrManager(userEmail))
@@ -228,7 +230,7 @@ class _HomePageState extends State<HomePage> {
                   ),
                   const SizedBox(height: 4),
                   Text(
-                    'Price: $price SAR',
+                    '${AppLocalizations.of(context)!.price}: $price ${AppLocalizations.of(context)!.currency}',
                     style: const TextStyle(fontSize: 14, color: Colors.white70),
                   ),
                   if (_isAdmin(userEmail))

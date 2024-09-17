@@ -11,6 +11,8 @@ import '../widgets/app_bar.dart';
 import '../widgets/bottom_nav_bar.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart'; // For localization
+
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -90,7 +92,7 @@ class _HomeScreenState extends State<HomeScreen> {
           } else if (state is UserDataFailure) {
             return Center(child: Text(state.error));
           } else {
-            return const Center(child: Text("Welcome to Bungee KSA!"));
+            return  Center(child: Text(AppLocalizations.of(context)!.welcomeMessage));
           }
         },
       ),

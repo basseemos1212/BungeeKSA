@@ -3,6 +3,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:lottie/lottie.dart'; // For checkmark animation
 import 'dart:async';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart'; // For localization
 
 import 'feedback_form.dart'; // For Timer to close the page automatically
 
@@ -60,40 +61,39 @@ class _BarcodeDetailPageState extends State<BarcodeDetailPage> {
     }
   }
 
-  // Show checkmark animation and close the page after 2 seconds
- // Show checkmark animation and close the page before navigating to feedback
-void _showCheckmarkAnimation() {
-  showDialog(
-    context: context,
-    barrierDismissible: false,
-    builder: (context) => Center(
-      child: Lottie.asset(
-        'assets/animations/checkmark.json', // Use a checkmark animation from Lottie
-        width: 300,
-        height: 300,
-        repeat: false,
-        onLoaded: (composition) {
-          Timer(const Duration(seconds: 2), () {
-            Navigator.of(context).pop(); // Close the dialog
+  // Show checkmark animation and close the page before navigating to feedback
+  void _showCheckmarkAnimation() {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => Center(
+        child: Lottie.asset(
+          'assets/animations/checkmark.json', // Use a checkmark animation from Lottie
+          width: 300,
+          height: 300,
+          repeat: false,
+          onLoaded: (composition) {
+            Timer(const Duration(seconds: 2), () {
+              Navigator.of(context).pop(); // Close the dialog
 
-            // Pop the BarcodeDetailPage from the stack first
-            Navigator.of(context).pop(); 
+              // Pop the BarcodeDetailPage from the stack first
+              Navigator.of(context).pop();
 
-            // Then navigate to the feedback form page
-            Navigator.of(context).push(
-              MaterialPageRoute(
-                builder: (context) => FeedbackFormPage(
-                  classId: widget.barcodeData.split('-')[1], // Pass classId
-                  userId: widget.barcodeData.split('-')[0], // Pass userId
+              // Then navigate to the feedback form page
+              Navigator.of(context).push(
+                MaterialPageRoute(
+                  builder: (context) => FeedbackFormPage(
+                    classId: widget.barcodeData.split('-')[1], // Pass classId
+                    userId: widget.barcodeData.split('-')[0], // Pass userId
+                  ),
                 ),
-              ),
-            );
-          });
-        },
+              );
+            });
+          },
+        ),
       ),
-    ),
-  );
-}
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -112,7 +112,7 @@ void _showCheckmarkAnimation() {
           children: [
             // Display userId
             Text(
-              "User ID: $userId",
+              "${AppLocalizations.of(context)!.userID}: $userId",
               style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 20),
@@ -132,7 +132,7 @@ void _showCheckmarkAnimation() {
                 const Icon(Icons.date_range, color: Colors.grey, size: 22),
                 const SizedBox(width: 10),
                 Text(
-                  "Date: ${widget.date}",
+                  "${AppLocalizations.of(context)!.date}: ${widget.date}",
                   style: const TextStyle(fontSize: 18, color: Colors.grey),
                 ),
               ],
@@ -144,7 +144,7 @@ void _showCheckmarkAnimation() {
                 const Icon(Icons.access_time, color: Colors.grey, size: 22),
                 const SizedBox(width: 10),
                 Text(
-                  "Time: ${widget.hour}",
+                  "${AppLocalizations.of(context)!.time}: ${widget.hour}",
                   style: const TextStyle(fontSize: 18, color: Colors.grey),
                 ),
               ],
@@ -156,7 +156,7 @@ void _showCheckmarkAnimation() {
                 const Icon(Icons.attach_money, color: Colors.blue, size: 22),
                 const SizedBox(width: 10),
                 Text(
-                  "Price: ${widget.price} SAR",
+                  "${AppLocalizations.of(context)!.price}: ${widget.price} ${AppLocalizations.of(context)!.currency}",
                   style: const TextStyle(fontSize: 18, color: Colors.blue),
                 ),
               ],
@@ -170,9 +170,9 @@ void _showCheckmarkAnimation() {
               height: 90,
             ),
             const SizedBox(height: 20),
-            const Text(
-              "Scan this barcode at the entrance.",
-              style: TextStyle(fontSize: 16, fontStyle: FontStyle.italic),
+            Text(
+              AppLocalizations.of(context)!.scanBarcodeAtEntrance,
+              style: const TextStyle(fontSize: 16, fontStyle: FontStyle.italic),
             ),
           ],
         ),

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:intl/intl.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart'; // Import localization
 
 class AddClassScreen extends StatefulWidget {
   const AddClassScreen({super.key});
@@ -20,7 +21,7 @@ class _AddClassScreenState extends State<AddClassScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Add New Class'),
+        title: Text(AppLocalizations.of(context)!.addNewClass), // Localized title
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
@@ -29,11 +30,15 @@ class _AddClassScreenState extends State<AddClassScreen> {
           children: [
             TextField(
               controller: classNameController,
-              decoration: const InputDecoration(labelText: 'Class Name'),
+              decoration: InputDecoration(
+                labelText: AppLocalizations.of(context)!.className, // Localized label
+              ),
             ),
             TextField(
               controller: priceController,
-              decoration: const InputDecoration(labelText: 'Price'),
+              decoration: InputDecoration(
+                labelText: AppLocalizations.of(context)!.price, // Localized label
+              ),
               keyboardType: TextInputType.number,
             ),
             StreamBuilder<QuerySnapshot>(
@@ -56,7 +61,7 @@ class _AddClassScreenState extends State<AddClassScreen> {
                       selectedClassType = newValue!;
                     });
                   },
-                  hint: const Text("Select Class Type"),
+                  hint: Text(AppLocalizations.of(context)!.selectClassType), // Localized hint
                   items: classTypeItems,
                 );
               },
@@ -66,7 +71,7 @@ class _AddClassScreenState extends State<AddClassScreen> {
               onPressed: () async {
                 _pickDate();
               },
-              child: const Text("Select Active Dates"),
+              child: Text(AppLocalizations.of(context)!.selectActiveDates), // Localized button text
             ),
             const SizedBox(height: 16),
             selectedDates.isNotEmpty
@@ -75,33 +80,33 @@ class _AddClassScreenState extends State<AddClassScreen> {
                       return Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text("Date: $date"),
+                          Text("${AppLocalizations.of(context)!.availableHoursAndSeats}: $date"),
                           ElevatedButton(
                             onPressed: () {
                               _pickTimeForDate(date);
                             },
-                            child: const Text("Add Available Hours and Seats"),
+                            child: Text(AppLocalizations.of(context)!.addAvailableHoursAndSeats), // Localized text
                           ),
                           if (availableTimes[date] != null) ...[
-                            const Text(
-                              "Available Hours and Seats:",
-                              style: TextStyle(fontSize: 14, color: Colors.green),
+                            Text(
+                              AppLocalizations.of(context)!.availableHoursAndSeats,
+                              style: const TextStyle(fontSize: 14, color: Colors.green),
                             ),
                             ...availableTimes[date]!.entries.map((entry) {
-                              return Text("Hour: ${entry.key}, Seats: ${entry.value}");
+                              return Text("${AppLocalizations.of(context)!.setAvailableSeats} ${entry.key}, ${AppLocalizations.of(context)!.numberOfSeats}: ${entry.value}");
                             }),
                           ],
                         ],
                       );
                     }).toList(),
                   )
-                : const Text("No dates selected"),
+                : Text(AppLocalizations.of(context)!.noDatesSelected), // Localized text
             const SizedBox(height: 20),
             ElevatedButton(
               onPressed: () async {
                 _addClassToFirestore();
               },
-              child: const Text('Add Class'),
+              child: Text(AppLocalizations.of(context)!.addClass), // Localized button text
             ),
           ],
         ),
@@ -127,49 +132,56 @@ class _AddClassScreenState extends State<AddClassScreen> {
     }
   }
 
-  Future<void> _pickTimeForDate(String date) async {
-    final TimeOfDay? pickedTime = await showTimePicker(
+ Future<void> _pickTimeForDate(String date) async {
+  final TimeOfDay? pickedTime = await showTimePicker(
+    context: context,
+    initialTime: const TimeOfDay(hour: 9, minute: 0),
+  );
+
+  if (pickedTime != null) {
+    final seatsController = TextEditingController();
+
+    showDialog(
       context: context,
-      initialTime: const TimeOfDay(hour: 9, minute: 0),
-    );
+      builder: (context) {
+        return AlertDialog(
+          title: Text("${AppLocalizations.of(context)!.setAvailableSeats} ${pickedTime.format(context)}"),
+          content: TextField(
+            controller: seatsController,
+            keyboardType: TextInputType.number,
+            decoration: InputDecoration(labelText: AppLocalizations.of(context)!.numberOfSeats), // Localized label
+          ),
+          actions: [
+            TextButton(
+              onPressed: () {
+                // Convert time to an English AM/PM format
+                final formattedTime = MaterialLocalizations.of(context).formatTimeOfDay(
+                  pickedTime,
+                  alwaysUse24HourFormat: false,
+                ); // This ensures the time is saved in AM/PM format in English
 
-    if (pickedTime != null) {
-      final seatsController = TextEditingController();
-      showDialog(
-        context: context,
-        builder: (context) {
-          return AlertDialog(
-            title: Text("Set available seats for ${pickedTime.format(context)}"),
-            content: TextField(
-              controller: seatsController,
-              keyboardType: TextInputType.number,
-              decoration: const InputDecoration(labelText: 'Number of seats'),
+                final seats = int.tryParse(seatsController.text);
+
+                if (seats != null) {
+                  setState(() {
+                    if (availableTimes[date] == null) {
+                      availableTimes[date] = {};
+                    }
+                    availableTimes[date]![formattedTime] = seats;
+                  });
+                }
+
+                Navigator.pop(context);
+              },
+              child: Text(AppLocalizations.of(context)!.ok), // Localized text
             ),
-            actions: [
-              TextButton(
-                onPressed: () {
-                  final formattedTime = pickedTime.format(context);
-                  final seats = int.tryParse(seatsController.text);
-
-                  if (seats != null) {
-                    setState(() {
-                      if (availableTimes[date] == null) {
-                        availableTimes[date] = {};
-                      }
-                      availableTimes[date]![formattedTime] = seats;
-                    });
-                  }
-
-                  Navigator.pop(context);
-                },
-                child: const Text('OK'),
-              ),
-            ],
-          );
-        },
-      );
-    }
+          ],
+        );
+      },
+    );
   }
+}
+
 
   Future<void> _addClassToFirestore() async {
     if (classNameController.text.isNotEmpty &&
@@ -187,7 +199,7 @@ class _AddClassScreenState extends State<AddClassScreen> {
       try {
         await FirebaseFirestore.instance.collection('classes').add(classData);
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Class added successfully')),
+          SnackBar(content: Text(AppLocalizations.of(context)!.classAddedSuccessfully)), // Localized success message
         );
 
         // Clear inputs after saving
@@ -199,12 +211,12 @@ class _AddClassScreenState extends State<AddClassScreen> {
         });
       } catch (e) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Failed to add class: $e')),
+          SnackBar(content: Text('${AppLocalizations.of(context)!.failedToAddClass}: $e')), // Localized error message
         );
       }
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please fill all fields')),
+        SnackBar(content: Text(AppLocalizations.of(context)!.pleaseFillAllFields)), // Localized message
       );
     }
   }

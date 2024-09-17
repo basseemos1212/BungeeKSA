@@ -16,7 +16,78 @@
   "profilePictureUpdatedSuccess": "Profile picture updated successfully!",
   "name": "Name",
   "email": "Email",
-
+  "welcomeMessage": "Welcome to Bungee KSA!",
+  "loading": "Loading...",
+  "fetchingUserDataFailed": "Failed to fetch user data",
+  "home": "Home",
+  "bookings": "Bookings",
+  "barcode": "Barcode",
+  "appBarTitle": "Bungee KSA",
+  "searchbar":"Search users by email",
+  "bookingAvailablity":"no bookings available",
+  "user":"users bookings",
+  "barcodeUser":"Users Barcode",
+  "className": "Class Name",
+  "addClass": "Add Class",
+  "addNewClass": "Add New Class",
+  "selectClassType": "Select Class Type",
+  "ok": "OK",
+  "price": "Price",
+  "numberOfSeats": "Number of seats",
+  "selectActiveDates": "Select Active Dates",
+  "noDatesSelected": "No dates selected",
+  "failedToAddClass": "Failed to add class",
+  "availableHoursAndSeats": "Available Hours and Seats",
+  "pleaseFillAllFields": "Please fill all fields",
+  "classAddedSuccessfully": "Class added successfully",
+  "setAvailableSeats": "Set available seats for",
+  "addAvailableHoursAndSeats": "Add Available Hours and Seats",
+  "bungeeClasses":"BUNGEE CLASSES",
+  "addNewClassType": "Add New Class Type",
+  "classTypeName": "Class Type Name",
+  "addClassType": "Add Class Type",
+  "classTypeAddedSuccess": "Class type added successfully",
+  "fillClassTypeName": "Please fill in the class type name",
+  "searchClassByName": "search class by name",
+  "myBookings": "my bookings",
+"currency":"SAR",
+  "@currency":{},
+  "@myBookings":{
+    "description": "تسمية لحقل إدخال اسم نوع الحصص"
+  },
+  "@searchClassByName":{
+    "description": "تسمية لحقل إدخال اسم نوع الحصص"
+  },
+  "@addNewClassType": {
+    "description": "Title for the Add Class Type screen"
+  },
+  "@classTypeName": {
+    "description": "Label for the class type name input field"
+  },
+  "@addClassType": {
+    "description": "Button text to add a new class type"
+  },
+  "@classTypeAddedSuccess": {
+    "description": "Success message after adding a new class type"
+  },
+  "@fillClassTypeName": {
+    "description": "Error message when the class type name field is empty"
+  },
+  "@bungeeClasses":{
+    "description": "hint text for no bookings"
+  },
+  "@barcodeUser":{
+    "description": "hint text for no bookings"
+  },
+  "@user":{
+    "description": "hint text for no bookings"
+  },
+  "@bookingAvailablity":{
+    "description": "hint text for no bookings"
+  },
+  "@searchbar":{
+    "description": "hint text for search by email"
+  },
   "@settings": {
     "description": "Title of the settings page"
   },
@@ -64,5 +135,152 @@
   },
   "@email": {
     "description": "Label for the user's email"
+  },
+  "@welcomeMessage": {
+    "description": "Welcome message shown on the home screen"
+  },
+  "@loading": {
+    "description": "Loading message displayed when user data is being fetched"
+  },
+  "@fetchingUserDataFailed": {
+    "description": "Error message shown when fetching user data fails"
+  },
+  "@home": {
+    "description": "Label for the Home tab"
+  },
+  "@bookings": {
+    "description": "Label for the Bookings tab"
+  },
+  "@barcode": {
+    "description": "Label for the Barcode tab"
+  },
+
+  "@appBarTitle": {
+    "description": "Title of the app bar"
+  },
+  "@addNewClass": {
+    "description": "Title for the Add Class screen"
+  },
+  "@className": {
+    "description": "Label for the class name input field"
+  },
+  "@price": {
+    "description": "Label for the class price input field"
+  },
+  "@selectClassType": {
+    "description": "Dropdown label for selecting the class type"
+  },
+  "@selectActiveDates": {
+    "description": "Button text for selecting active dates"
+  },
+  "@noDatesSelected": {
+    "description": "Message when no dates are selected"
+  },
+  "@availableHoursAndSeats": {
+    "description": "Label showing available hours and seat counts"
+  },
+  "@addAvailableHoursAndSeats": {
+    "description": "Button text for adding hours and seats"
+  },
+  "@setAvailableSeats": {
+    "description": "Dialog title for setting available seats for a specific hour"
+  },
+  "@numberOfSeats": {
+    "description": "Label for the input field to set seat count"
+  },
+  "@ok": {
+    "description": "Button text for confirming an action"
+  },
+  "@addClass": {
+    "description": "Button text to add the class"
+  },
+  "@classAddedSuccessfully": {
+    "description": "Success message after adding a class"
+  },
+  "@failedToAddClass": {
+    "description": "Error message when class addition fails"
+  },
+  "@pleaseFillAllFields": {
+    "description": "Message prompting the user to fill all fields"
   }
+  ,
+  "availableDays": "Available Days",
+  "@availableDays": {},
+  "availableHours": "Available Hours",
+  "@availableHours": {},
+  "seatsLeft": "seats left",
+  "@seatsLeft": {},
+  "book": "Book",
+  "@book": {},
+  "close": "Close",
+  "@close": {},
+  "bookingSuccessful": "Booking successful!",
+  "@bookingSuccessful": {},
+  "alreadyBooked": "You have already booked this class at the selected time.",
+  "@alreadyBooked": {},
+  "noSeatsAvailable": "No available seats for the selected time.",
+  "@noSeatsAvailable": {},
+  "userNotLoggedIn": "User not logged in!",
+  "@userNotLoggedIn": {},
+"userManagement": "User Management",
+  "@userManagement": {},
+  "searchUsers": "Search by user email",
+  "@searchUsers": {},
+  "availableSeats": "Available Seats",
+  "@availableSeats": {},
+  "noBookingsAvailable": "No bookings available",
+  "@noBookingsAvailable": {},
+  "time": "Time",
+  "@time": {},
+  "date": "Date",
+  "@date": {},
+  "scanning": "Scanning...",
+  "@scanning": {},
+  "startScanning": "Start Scanning",
+  "@startScanning": {},
+  "scanSuccessful": "Scan Successful",
+  "@scanSuccessful": {},
+  "scanFailed": "Scan Failed",
+  "@scanFailed": {},
+  "userMarkedAsAttended": "User has been marked as attended.",
+  "@userMarkedAsAttended": {},
+  "invalidBarcodeOrBookingNotFound": "Invalid barcode or booking not found.",
+  "@invalidBarcodeOrBookingNotFound": {},
+  "noUsersFound": "No users found.",
+  "@noUsersFound": {},
+  "noClassesAvailable": "No available classes for attendance.",
+  "@noClassesAvailable": {},
+
+  "tapToViewBarcode": "Tap to view barcode",
+  "@tapToViewBarcode": {},
+  "giveFeedback": "Give Feedback",
+  "@giveFeedback": {},
+  "rateWorkout": "Rate the Workout",
+  "@rateWorkout": {},
+  "rateTrainer": "Rate the Trainer",
+  "@rateTrainer": {},
+  "rateAtmosphere": "Rate the Atmosphere",
+  "@rateAtmosphere": {},
+  "additionalFeedback": "Additional Feedback",
+  "@additionalFeedback": {},
+  "submitFeedback": "Submit Feedback",
+  "@submitFeedback": {},
+  "feedbackSubmittedSuccessfully": "Feedback submitted successfully!",
+  "@feedbackSubmittedSuccessfully": {},
+  "errorSubmittingFeedback": "Error submitting feedback",
+  "@errorSubmittingFeedback": {},
+  "userID": "User ID",
+  "@userID": {},
+  
+  "scanBarcodeAtEntrance": "Scan this barcode at the entrance.",
+  "@scanBarcodeAtEntrance": {},
+  "logout":"logout",
+  "@logout": {}
+  
 }
+
+
+ 
+  
+
+
