@@ -44,7 +44,6 @@
   "addAvailableHoursAndSeats": "Add Available Hours and Seats",
   "bungeeClasses":"BUNGEE CLASSES",
   "addNewClassType": "Add New Class Type",
-  "classTypeName": "Class Type Name",
   "addClassType": "Add Class Type",
   "classTypeAddedSuccess": "Class type added successfully",
   "fillClassTypeName": "Please fill in the class type name",
@@ -275,7 +274,12 @@
   "scanBarcodeAtEntrance": "Scan this barcode at the entrance.",
   "@scanBarcodeAtEntrance": {},
   "logout":"logout",
-  "@logout": {}
+  "@logout": {},
+  "classTypeName": "Class Type Name (English)",
+  "classTypeArabicName": "Class Type Name (Arabic)",
+  "@classTypeArabicName": {},
+  "classNameArabic":"add class name (arabic)",
+  "@classNameArabic": {}
   
 }
 

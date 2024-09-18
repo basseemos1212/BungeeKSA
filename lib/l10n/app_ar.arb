@@ -278,5 +278,10 @@
   "scanBarcodeAtEntrance": "قم بمسح هذا الرمز عند المدخل.",
   "@scanBarcodeAtEntrance": {} ,
   "logout":"تسجيل الخروج",
-  "@logout": {} 
+  "@logout": {} ,
+  "classTypeArabicName": "اسم نوع الحصة (بالعربية)",
+  "@classTypeArabicName": {},
+  "classNameArabic":"اسم الحصه باللغة العربيه",
+  "@classNameArabic": {}
+
 }

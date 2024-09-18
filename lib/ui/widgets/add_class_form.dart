@@ -12,13 +12,41 @@ class AddClassScreen extends StatefulWidget {
 
 class _AddClassScreenState extends State<AddClassScreen> {
   final TextEditingController classNameController = TextEditingController();
+  final TextEditingController arabicClassNameController = TextEditingController(); // Arabic name controller
   final TextEditingController priceController = TextEditingController();
+  final TextEditingController hashtagSearchController = TextEditingController(); // Hashtag search controller
+
   String? selectedClassType; // Selected class type (initially null)
   List<String> selectedDates = []; // To store selected dates
   Map<String, Map<String, dynamic>> availableTimes = {}; // To store hours and seat counts per date
 
+  List<String> predefinedHashtags = ['Adult Classes', 'Kids Classes', 'Private Classes']; // Predefined hashtags
+
+  void _fillWithHashtag(String hashtag) {
+    // Fill both English and Arabic names based on hashtag
+    if (hashtag == 'Adult Classes') {
+      classNameController.text = 'Adult Classes';
+      arabicClassNameController.text = 'حصص الكبار';
+    } else if (hashtag == 'Kids Classes') {
+      classNameController.text = 'Kids Classes';
+      arabicClassNameController.text = 'حصص الأطفال';
+    } else if (hashtag == 'Private Classes') {
+      classNameController.text = 'Private Classes';
+      arabicClassNameController.text = 'حصص خاصة';
+    } else {
+      // For any custom hashtags, ensure both fields are handled
+      classNameController.text = hashtag;
+      arabicClassNameController.text = 'حصص'; // Provide a generic default Arabic name
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
+    final filteredHashtags = predefinedHashtags
+        .where((hashtag) =>
+            hashtag.toLowerCase().contains(hashtagSearchController.text.toLowerCase()))
+        .toList();
+
     return Scaffold(
       appBar: AppBar(
         title: Text(AppLocalizations.of(context)!.addNewClass), // Localized title
@@ -29,9 +57,37 @@ class _AddClassScreenState extends State<AddClassScreen> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             TextField(
+              controller: hashtagSearchController,
+              decoration: InputDecoration(
+                labelText: 'Search Hashtags',
+                prefixIcon: const Icon(Icons.search),
+              ),
+              onChanged: (text) {
+                setState(() {}); // Rebuild the widget to filter hashtags
+              },
+            ),
+            const SizedBox(height: 16),
+            Wrap(
+              spacing: 8.0,
+              children: [
+                for (var hashtag in filteredHashtags)
+                  ActionChip(
+                    label: Text('#$hashtag'),
+                    onPressed: () => _fillWithHashtag(hashtag),
+                  ),
+              ],
+            ),
+            const SizedBox(height: 16),
+            TextField(
               controller: classNameController,
               decoration: InputDecoration(
-                labelText: AppLocalizations.of(context)!.className, // Localized label
+                labelText: AppLocalizations.of(context)!.className, // Localized label for English class name
+              ),
+            ),
+            TextField(
+              controller: arabicClassNameController,
+              decoration: InputDecoration(
+                labelText: AppLocalizations.of(context)!.classNameArabic, // Localized label for Arabic class name
               ),
             ),
             TextField(
@@ -132,65 +188,65 @@ class _AddClassScreenState extends State<AddClassScreen> {
     }
   }
 
- Future<void> _pickTimeForDate(String date) async {
-  final TimeOfDay? pickedTime = await showTimePicker(
-    context: context,
-    initialTime: const TimeOfDay(hour: 9, minute: 0),
-  );
-
-  if (pickedTime != null) {
-    final seatsController = TextEditingController();
-
-    showDialog(
+  Future<void> _pickTimeForDate(String date) async {
+    final TimeOfDay? pickedTime = await showTimePicker(
       context: context,
-      builder: (context) {
-        return AlertDialog(
-          title: Text("${AppLocalizations.of(context)!.setAvailableSeats} ${pickedTime.format(context)}"),
-          content: TextField(
-            controller: seatsController,
-            keyboardType: TextInputType.number,
-            decoration: InputDecoration(labelText: AppLocalizations.of(context)!.numberOfSeats), // Localized label
-          ),
-          actions: [
-            TextButton(
-              onPressed: () {
-                // Convert time to an English AM/PM format
-                final formattedTime = MaterialLocalizations.of(context).formatTimeOfDay(
-                  pickedTime,
-                  alwaysUse24HourFormat: false,
-                ); // This ensures the time is saved in AM/PM format in English
-
-                final seats = int.tryParse(seatsController.text);
-
-                if (seats != null) {
-                  setState(() {
-                    if (availableTimes[date] == null) {
-                      availableTimes[date] = {};
-                    }
-                    availableTimes[date]![formattedTime] = seats;
-                  });
-                }
-
-                Navigator.pop(context);
-              },
-              child: Text(AppLocalizations.of(context)!.ok), // Localized text
-            ),
-          ],
-        );
-      },
+      initialTime: const TimeOfDay(hour: 9, minute: 0),
     );
-  }
-}
 
+    if (pickedTime != null) {
+      final seatsController = TextEditingController();
+
+      showDialog(
+        context: context,
+        builder: (context) {
+          return AlertDialog(
+            title: Text("${AppLocalizations.of(context)!.setAvailableSeats} ${pickedTime.format(context)}"),
+            content: TextField(
+              controller: seatsController,
+              keyboardType: TextInputType.number,
+              decoration: InputDecoration(labelText: AppLocalizations.of(context)!.numberOfSeats), // Localized label
+            ),
+            actions: [
+              TextButton(
+                onPressed: () {
+                  // Force the time format to always use AM/PM in English
+                  final formattedTime = DateFormat('h:mm a', 'en').format(
+                    DateTime(0, 0, 0, pickedTime.hour, pickedTime.minute),
+                  );
+
+                  final seats = int.tryParse(seatsController.text);
+
+                  if (seats != null) {
+                    setState(() {
+                      if (availableTimes[date] == null) {
+                        availableTimes[date] = {};
+                      }
+                      availableTimes[date]![formattedTime] = seats;
+                    });
+                  }
+
+                  Navigator.pop(context);
+                },
+                child: Text(AppLocalizations.of(context)!.ok), // Localized text
+              ),
+            ],
+          );
+        },
+      );
+    }
+  }
 
   Future<void> _addClassToFirestore() async {
     if (classNameController.text.isNotEmpty &&
+        arabicClassNameController.text.isNotEmpty && // Check Arabic name
         priceController.text.isNotEmpty &&
         selectedClassType != null &&
         selectedDates.isNotEmpty &&
         availableTimes.isNotEmpty) {
       final classData = {
         'name': classNameController.text,
+        'arabic_name': arabicClassNameController.text, // Store Arabic name
         'price': int.parse(priceController.text),
         'type': selectedClassType,
         'available_times': availableTimes, // Store selected dates, hours, and seat counts
@@ -204,6 +260,7 @@ class _AddClassScreenState extends State<AddClassScreen> {
 
         // Clear inputs after saving
         classNameController.clear();
+        arabicClassNameController.clear(); // Clear Arabic name input
         priceController.clear();
         setState(() {
           selectedDates.clear();
